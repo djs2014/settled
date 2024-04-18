@@ -185,18 +185,33 @@ class SettledView extends WatchUi.DataField {
         for (var j = 0; j < bikeLights.size() / 2; j++) {
           y = y - lh - 1;
         }
+
+        var textHead = "";
+        var textTail = "";
+        var textOther = "";
         for (var i = 0; i < bikeLights.size(); i++) {
           var light = bikeLights[i] as BikeLight?;
 
           if (light != null) {
-            var line = $.getBikeLightTypeText(light.type as Number) + " " + $.getLightModeText(light.mode as Number);
-            font = $.getMatchingFont(dc, mFonts, width, height, line) as FontType;
             if (atBottom) {
-              text = text + line + ",";
+              switch (light.type as Number) {
+                case 0:
+                  textHead = "H-" + $.getLightModeText(light.mode as Number);
+                  break;
+                case 2:
+                  textTail = " T-" + $.getLightModeText(light.mode as Number);
+                  break;
+                case 6:
+                  textOther = " O-" + $.getLightModeText(light.mode as Number);
+                  break;
+              }
+              text = textHead + textTail + textOther;
             } else {
+              var line = $.getBikeLightTypeText(light.type as Number) + " " + $.getLightModeText(light.mode as Number);
+              font = $.getMatchingFont(dc, mFonts, width, height, line) as FontType;
               dc.drawText(x, y, font, line, justification);
+              y = y + lh + 1;
             }
-            y = y + lh + 1;
           }
         }
       }
@@ -280,7 +295,7 @@ class SettledView extends WatchUi.DataField {
           }
           y = y + lh + 1;
           dc.drawText(x, y, font, text, justification);
-        }        
+        }
       }
     }
   }

@@ -1,6 +1,3 @@
-after setting changed
-reload and get bike info again.
-
 display
  small
  
