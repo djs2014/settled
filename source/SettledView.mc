@@ -59,9 +59,11 @@ class SettledView extends WatchUi.DataField {
   function compute(info as Activity.Info) as Void {
     mTimerState = $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as Activity.TimerState;
 
-    mHeadLightMode = $.gHead_light_mode[mTimerState as Number];
-    mTailLightMode = $.gTail_light_mode[mTimerState as Number];
-    mOtherLightMode = $.gOther_light_mode[mTimerState as Number];
+    mHeadLightMode = $.gHead_light_mode[mTimerState as Number] as Number;
+    mTailLightMode = $.gTail_light_mode[mTimerState as Number] as Number;
+    mOtherLightMode = $.gOther_light_mode[mTimerState as Number] as Number;
+
+    mBikeLights = mLightNetwork.getBikeLights();
     updateBikeLights();
 
     mActivityPauzed = mTimerState != Activity.TIMER_STATE_ON;
@@ -184,7 +186,6 @@ class SettledView extends WatchUi.DataField {
           y = y - lh - 1;
         }
         for (var i = 0; i < bikeLights.size(); i++) {
-          // var light = (mBikeLights as Lang.Array<AntPlus.LightNetworkState>)[i] ;
           var light = bikeLights[i] as BikeLight?;
 
           if (light != null) {
@@ -237,7 +238,6 @@ class SettledView extends WatchUi.DataField {
     }
     var bikeLights = mBikeLights as Array;
     for (var i = 0; i < bikeLights.size(); i++) {
-      //var light = (mBikeLights as Lang.Array<AntPlus.LightNetworkState>)[i] ;
       var light = bikeLights[i] as BikeLight?;
 
       if (light != null) {
@@ -254,6 +254,7 @@ class SettledView extends WatchUi.DataField {
             break;
           case AntPlus.LIGHT_TYPE_TAILLIGHT:
             lightMode = mTailLightMode;
+            break;
           default:
           case AntPlus.LIGHT_TYPE_OTHER:
             lightMode = mOtherLightMode;
@@ -261,6 +262,13 @@ class SettledView extends WatchUi.DataField {
         }
 
         text = "Mode: " + (light.mode as Number).format("%d") + " ->  " + lightMode.format("%d");
+        dc.drawText(x, y, font, text, justification);
+
+        text = "gTail:";
+        for (var t = 0; t < $.gTail_light_mode.size(); t++) {
+          text = text + "|" + ($.gTail_light_mode[t] as Number).format("%0d");
+        }
+        y = y + lh + 1;
         dc.drawText(x, y, font, text, justification);
 
         var capableModes = light.getCapableModes();
@@ -272,20 +280,7 @@ class SettledView extends WatchUi.DataField {
           }
           y = y + lh + 1;
           dc.drawText(x, y, font, text, justification);
-        }
-
-        // if (lightMode > -1 && lightMode != light.mode) {
-        //   var capableModes = light.getCapableModes();
-        //   if (capableModes != null) {
-        //     if ((capableModes as Lang.Array<AntPlus.LightMode>).indexOf(lightMode as AntPlus.LightMode) > -1) {
-        //       light.setMode(lightMode as AntPlus.LightMode);
-
-        //       y = y + lh  + 1;
-        //       text = "SetMode";
-        //       dc.drawText(x, y, font, text, justification);
-        //     }
-        //   }
-        // }
+        }        
       }
     }
   }
@@ -296,7 +291,6 @@ class SettledView extends WatchUi.DataField {
     }
     var bikeLights = mBikeLights as Array;
     for (var i = 0; i < bikeLights.size(); i++) {
-      //var light = (mBikeLights as Lang.Array<AntPlus.LightNetworkState>)[i] ;
       var light = bikeLights[i] as BikeLight?;
 
       if (light != null) {
@@ -307,13 +301,14 @@ class SettledView extends WatchUi.DataField {
             break;
           case AntPlus.LIGHT_TYPE_TAILLIGHT:
             lightMode = mTailLightMode;
+            break;
           default:
           case AntPlus.LIGHT_TYPE_OTHER:
             lightMode = mOtherLightMode;
             break;
         }
 
-        if (lightMode > -1 && lightMode != light.mode) {
+        if (lightMode > -1 && lightMode != (light.mode as Number)) {
           var capableModes = light.getCapableModes();
           if (capableModes != null) {
             if ((capableModes as Lang.Array<AntPlus.LightMode>).indexOf(lightMode as AntPlus.LightMode) > -1) {

@@ -1,8 +1,17 @@
+after setting changed
+reload and get bike info again.
+
 display
  small
+ 
  wide field
+
  show light info in xsmall font
+    diff options: nope | long | short (h|t|o) order
     Head + mode short | ..
+    head|tail|other
+    s-flash|off
+    light gray / dark gray / symbol?
 
 1   Light info
     option to show timer state
