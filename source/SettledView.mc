@@ -10,6 +10,11 @@ class SettledView extends WatchUi.DataField {
   hidden var mHeadLightMode as Number = -1;
   hidden var mTailLightMode as Number = -1;
   hidden var mOtherLightMode as Number = -1;
+
+  hidden var mHeadLightCounter as Number = -1;
+  hidden var mTailLightCounter as Number = -1;
+  hidden var mOtherLightCounter as Number = -1;
+
   hidden var mTimerState as Activity.TimerState = Activity.TIMER_STATE_OFF;
   hidden var mValueA as Numeric = 0;
   hidden var mValueB as Numeric = 0;
@@ -63,6 +68,33 @@ class SettledView extends WatchUi.DataField {
     mTailLightMode = $.gTail_light_mode[mTimerState as Number] as Number;
     mOtherLightMode = $.gOther_light_mode[mTimerState as Number] as Number;
 
+    // When paused, count down then optional change mode
+    var mode = -1;
+    var maxHeadLightSecInPause = $.gHead_light_mode[4] as Number;
+    mHeadLightCounter = processPauseCounter(maxHeadLightSecInPause, mHeadLightCounter);
+    if (mHeadLightCounter == 0) {
+      mode = $.gHead_light_mode[5] as Number;
+      if (mode > -1) {
+        mHeadLightMode = mode;
+      }
+    }
+    var maxTailLightSecInPause = $.gTail_light_mode[4] as Number;
+    mTailLightCounter = processPauseCounter(maxTailLightSecInPause, mTailLightCounter);
+    if (mTailLightCounter == 0) {
+      mode = $.gTail_light_mode[5] as Number;
+      if (mode > -1) {
+        mTailLightMode = mode;
+      }
+    }
+    var maxOtherLightSecInPause = $.gOther_light_mode[4] as Number;
+    mOtherLightCounter = processPauseCounter(maxOtherLightSecInPause, mOtherLightCounter);
+    if (mOtherLightCounter == 0) {
+      mode = $.gOther_light_mode[5] as Number;
+      if (mode > -1) {
+        mOtherLightMode = mode;
+      }
+    }
+
     mBikeLights = mLightNetwork.getBikeLights();
     updateBikeLights();
 
@@ -94,6 +126,18 @@ class SettledView extends WatchUi.DataField {
         mValueB = $.getActivityValue(info, :rearDerailleurSize, 0) as Number;
         break;
     }
+  }
+
+  // When paused, countdown then optional change mode
+  function processPauseCounter(maxSecondsPaused as Number, counter as Number) as Number {
+    if (mTimerState != Activity.TIMER_STATE_PAUSED || maxSecondsPaused <= 0) {
+      return -1;
+    }
+
+    if (counter == -1) {
+      return maxSecondsPaused;
+    }
+    return counter - 1;
   }
 
   function onUpdate(dc as Dc) as Void {

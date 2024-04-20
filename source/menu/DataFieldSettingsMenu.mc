@@ -65,6 +65,15 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
+      mi = new WatchUi.MenuItem("When paused for", null, "head_light_mode_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "head_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
       WatchUi.pushView(tlMenu, new $.GeneralMenuDelegate(self, tlMenu), WatchUi.SLIDE_UP);
       return;
     }
@@ -92,6 +101,15 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
+      mi = new WatchUi.MenuItem("When paused for", null, "tail_light_mode_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "tail_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
       WatchUi.pushView(tlMenu, new $.GeneralMenuDelegate(self, tlMenu), WatchUi.SLIDE_UP);
       return;
     }
@@ -115,6 +133,15 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       tlMenu.addItem(mi);
 
       mi = new WatchUi.MenuItem("Timer on", null, "other_light_mode_3", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When paused for", null, "other_light_mode_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "other_light_mode_5", null);
       value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
@@ -160,7 +187,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       (id.equals("head_light_mode_0") ||
         id.equals("head_light_mode_1") ||
         id.equals("head_light_mode_2") ||
-        id.equals("head_light_mode_3"))
+        id.equals("head_light_mode_3") ||
+        id.equals("head_light_mode_5"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_HEADLIGHT);
       var sp = new selectionMenuPicker("Headlightmode", id as String);
@@ -185,7 +213,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       (id.equals("tail_light_mode_0") ||
         id.equals("tail_light_mode_1") ||
         id.equals("tail_light_mode_2") ||
-        id.equals("tail_light_mode_3"))
+        id.equals("tail_light_mode_3") ||
+        id.equals("tail_light_mode_5"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
 
@@ -212,7 +241,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       (id.equals("other_light_mode_0") ||
         id.equals("other_light_mode_1") ||
         id.equals("other_light_mode_2") ||
-        id.equals("other_light_mode_3"))
+        id.equals("other_light_mode_3") ||
+        id.equals("other_light_mode_5"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_OTHER);
       var sp = new selectionMenuPicker("Otherlightmode", id as String);
@@ -444,11 +474,17 @@ function getDisplayText(value as Number) as String {
 }
 
 function getLightModeFor(key as String) as String {
-  return Lang.format("$1$|$2$|$3$|$4$", [
+  var pauseAction = "";
+  var sec = $.getStorageValue(key + "4", -1) as Number;
+  if (sec > -1) {
+    pauseAction = sec.format("%0d") + ":" + $.getLightModeTextShort($.getStorageValue(key + "5", -1) as Number);
+  }
+  return Lang.format("$1$|$2$|$3$|$4$|$5$", [
     $.getLightModeTextShort($.getStorageValue(key + "0", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "1", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "2", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "3", -1) as Number),
+    pauseAction,
   ]);
 }
 function getStorageNumberAsString(key as String) as String {
