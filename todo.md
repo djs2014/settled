@@ -1,6 +1,3 @@
-pause for x seconds -> do as timer off/stop/etc or mode
-
-
 display
  small
  

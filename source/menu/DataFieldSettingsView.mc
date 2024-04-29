@@ -62,6 +62,11 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi.setSubLabel($.getLightModeFor("other_light_mode_"));
     menu.addItem(mi);
 
+    mi = new WatchUi.MenuItem("Test Timer State", null, "test_TimerState", null);
+    var value = getStorageValue(mi.getId() as String, 0) as Number;
+    mi.setSubLabel($.getTimerStateAsString(value));
+    menu.addItem(mi);
+
     var boolean = Storage.getValue("resetDefaults") ? true : false;
     menu.addItem(new WatchUi.ToggleMenuItem("Reset to defaults", null, "resetDefaults", boolean, null));
 

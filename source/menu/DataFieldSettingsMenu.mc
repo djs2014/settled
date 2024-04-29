@@ -3,6 +3,7 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 import Toybox.System;
 import Toybox.AntPlus;
+import Toybox.Activity;
 
 class DataFieldSettingsMenu extends WatchUi.Menu2 {
   function initialize() {
@@ -147,6 +148,17 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       tlMenu.addItem(mi);
 
       WatchUi.pushView(tlMenu, new $.GeneralMenuDelegate(self, tlMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
+    if (id instanceof String && id.equals("test_TimerState")) {
+      var sp = new selectionMenuPicker("Test TimerState", id as String);
+      for (var i = -1; i <= 3; i++) {
+        sp.add($.getTimerStateAsString(i), "", i);
+      }
+
+      sp.setOnSelected(self, :onSelectedSelection, item);
+      sp.show();
       return;
     }
 
@@ -487,6 +499,24 @@ function getLightModeFor(key as String) as String {
     pauseAction,
   ]);
 }
+
+function getTimerStateAsString(key as Number) as String {
+  switch (key) {
+    case -1:
+      return "Ignore";
+    case Activity.TIMER_STATE_OFF:
+      return "Off";
+    case Activity.TIMER_STATE_STOPPED:
+      return "Stopped";
+    case Activity.TIMER_STATE_PAUSED:
+      return "Paused";
+    case Activity.TIMER_STATE_ON:
+      return "On";
+    default:
+      return "--";
+  }
+}
+
 function getStorageNumberAsString(key as String) as String {
   return ($.getStorageValue(key, 0) as Number).format("%.0d");
 }

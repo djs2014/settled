@@ -30,6 +30,9 @@ class SettledApp extends Application.AppBase {
         System.println("Reset user settings");
         Storage.setValue("resetDefaults", false);
 
+        Storage.setValue("debug", false);
+        Storage.setValue("test_TimerState", -1);
+
         Storage.setValue("head_light_mode_0", 0); // off
         Storage.setValue("head_light_mode_1", 0); // stopped -> off
         Storage.setValue("head_light_mode_2", 6); // paused -> slow flash
@@ -53,6 +56,7 @@ class SettledApp extends Application.AppBase {
       }
 
       $.gDebug = getStorageValue("debug", gDebug) as Boolean;
+      $.gtest_TimerState = $.getStorageValue("test_TimerState", $.gtest_TimerState) as Number;
 
       $.gHead_light_mode =
         [
@@ -103,6 +107,7 @@ var gDebug as Boolean = false;
 var gHead_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0];
 var gTail_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0];
 var gOther_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0];
+var gtest_TimerState as Number = -1;
 
 var gDisplay_field as FieldDisplay = FldLights;
 var gShow_label as Boolean = false;

@@ -63,6 +63,9 @@ class SettledView extends WatchUi.DataField {
 
   function compute(info as Activity.Info) as Void {
     mTimerState = $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as Activity.TimerState;
+    if ($.gtest_TimerState > -1) {
+      mTimerState = $.gtest_TimerState as Activity.TimerState;
+    }
 
     mHeadLightMode = $.gHead_light_mode[mTimerState as Number] as Number;
     mTailLightMode = $.gTail_light_mode[mTimerState as Number] as Number;
@@ -131,11 +134,13 @@ class SettledView extends WatchUi.DataField {
   // When paused, countdown then optional change mode
   function processPauseCounter(maxSecondsPaused as Number, counter as Number) as Number {
     if (mTimerState != Activity.TIMER_STATE_PAUSED || maxSecondsPaused <= 0) {
-      return -1;
+      return maxSecondsPaused;
     }
 
     if (counter == -1) {
       return maxSecondsPaused;
+    } else if (counter == 0) {
+      return 0;
     }
     return counter - 1;
   }
