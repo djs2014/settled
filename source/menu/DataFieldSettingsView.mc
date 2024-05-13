@@ -67,7 +67,10 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi.setSubLabel($.getTimerStateAsString(value));
     menu.addItem(mi);
 
-    var boolean = Storage.getValue("resetDefaults") ? true : false;
+    var boolean = Storage.getValue("alert_no_network") ? true : false;
+    menu.addItem(new WatchUi.ToggleMenuItem("No lights alert", null, "alert_no_network", boolean, null));
+
+    boolean = Storage.getValue("resetDefaults") ? true : false;
     menu.addItem(new WatchUi.ToggleMenuItem("Reset to defaults", null, "resetDefaults", boolean, null));
 
 

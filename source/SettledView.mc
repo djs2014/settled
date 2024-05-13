@@ -4,6 +4,7 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 import Toybox.Application;
 import Toybox.AntPlus;
+import Toybox.Time;
 
 class SettledView extends WatchUi.DataField {
   hidden var mActivityPauzed as Boolean = true;
@@ -59,7 +60,10 @@ class SettledView extends WatchUi.DataField {
     mLightNetwork = new AntPlus.LightNetwork(mLightNetworkListener);
   }
 
-  function onLayout(dc as Dc) as Void {}
+  function onLayout(dc as Dc) as Void {
+    // fix for leaving menu, draw complete screen, large field
+    dc.clearClip();
+  }
 
   function compute(info as Activity.Info) as Void {
     mTimerState = $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as Activity.TimerState;
@@ -128,6 +132,9 @@ class SettledView extends WatchUi.DataField {
         mValueA = $.getActivityValue(info, :frontDerailleurSize, 0) as Number;
         mValueB = $.getActivityValue(info, :rearDerailleurSize, 0) as Number;
         break;
+      case FldClock:
+        // @@
+        break;
     }
   }
 
@@ -160,6 +167,20 @@ class SettledView extends WatchUi.DataField {
       fgColor = Graphics.COLOR_WHITE;
     }
 
+    if ($.gAlert_no_network) {
+      var status = mLightNetwork.getNetworkState();
+      switch (status) {
+        case AntPlus.LIGHT_NETWORK_STATE_NOT_FORMED:
+          fgColor = Graphics.COLOR_WHITE;
+          bgColor = Graphics.COLOR_RED;
+          break;
+        case AntPlus.LIGHT_NETWORK_STATE_FORMING:
+          bgColor = Graphics.COLOR_YELLOW;
+          break;
+        case AntPlus.LIGHT_NETWORK_STATE_FORMED:
+          break;
+      }
+    }
     dc.setColor(fgColor, bgColor);
     dc.clear();
 
@@ -184,6 +205,7 @@ class SettledView extends WatchUi.DataField {
     dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
 
     var text = "";
+    var subtext = "";
     switch ($.gDisplay_field) {
       case FldLights:
         drawLightInfo(dc, width, height, false);
@@ -200,14 +222,27 @@ class SettledView extends WatchUi.DataField {
       case FldDerailleurFRSize:
         text = mValueA.format("%d") + "|" + mValueB.format("%d");
         break;
+      case FldClock:
+        var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+        text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
+        //fi.decimals = today.sec.format("%02d");
+        subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day, today.month]);
+        break;
     }
 
     var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
     var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
     var x = width / 2;
     var y = height / 2;
-
-    dc.drawText(x, y, font, text, justification);
+    if (subtext.length() == 0) {
+      dc.drawText(x, y, font, text, justification);
+    } else {
+      y = height / 3; 
+      dc.drawText(x, y, font, text, justification);
+      var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;      
+      y = y + Graphics.getFontHeight(fontSub) + 2;      
+      dc.drawText(x, y, fontSub, subtext, justification);
+    }
   }
 
   function drawLightInfo(dc as Dc, width as Number, height as Number, atBottom as Boolean) as Void {

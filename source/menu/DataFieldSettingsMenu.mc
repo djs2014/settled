@@ -277,7 +277,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     if (id instanceof String && id.equals("display_field")) {
       var sp = new selectionMenuPicker("Display field", id as String);
-      for (var i = 0; i <= 6; i++) {
+      for (var i = 0; i <= 7; i++) {
         sp.add($.getDisplayText(i), "", i);
       }
 
@@ -480,6 +480,8 @@ function getDisplayText(value as Number) as String {
       return "Rear derailleur size";
     case FldDerailleurFRSize:
       return "F/R derailleur size";
+    case FldClock:
+      return "Clock";
     default:
       return "";
   }

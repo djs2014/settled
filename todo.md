@@ -1,3 +1,7 @@
+option
+- display clock info
+
+
 display
  small
  

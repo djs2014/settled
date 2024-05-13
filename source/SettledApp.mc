@@ -55,7 +55,9 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("other_light_mode_5", 0); 
       }
 
-      $.gDebug = getStorageValue("debug", gDebug) as Boolean;
+      $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
+      $.gAlert_no_network = getStorageValue("alert_no_network", $.gAlert_no_network) as Boolean;
+
       $.gtest_TimerState = $.getStorageValue("test_TimerState", $.gtest_TimerState) as Number;
 
       $.gHead_light_mode =
@@ -103,6 +105,7 @@ function getApp() as SettledApp {
 }
 
 var gDebug as Boolean = false;
+var gAlert_no_network as Boolean = false;
 // off, stopped, paused, on, seconds, paused for seconds
 var gHead_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0];
 var gTail_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0];
@@ -121,4 +124,5 @@ public enum FieldDisplay {
   FldDerailleurFSize = 4,
   FldDerailleurRSize = 5,
   FldDerailleurFRSize = 6,
+  FldClock = 7,
 }
