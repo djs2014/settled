@@ -234,14 +234,13 @@ class SettledView extends WatchUi.DataField {
     var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
     var x = width / 2;
     var y = height / 2;
-    if (subtext.length() == 0) {
       dc.drawText(x, y, font, text, justification);
-    } else {
-      y = height / 3; 
-      dc.drawText(x, y, font, text, justification);
-      var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;      
-      y = y + Graphics.getFontHeight(fontSub) + 2;      
-      dc.drawText(x, y, fontSub, subtext, justification);
+
+    if (subtext.length() > 0) {
+      dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+      var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
+      y = height - Graphics.getFontHeight(fontSub);      
+      dc.drawText(x, y, fontSub, subtext, Graphics.TEXT_JUSTIFY_CENTER);
     }
   }
 
