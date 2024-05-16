@@ -1,3 +1,4 @@
+import Toybox.Application;
 import Toybox.Application.Storage;
 import Toybox.Lang;
 import Toybox.WatchUi;
@@ -169,8 +170,8 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
   }
 
-  function onSelectedSelection(value as Object, storageKey as String) as Void {
-    Storage.setValue(storageKey, value as Number);
+  function onSelectedSelection(storageKey as String, value as Application.PropertyValueType) as Void {
+    Storage.setValue(storageKey, value);
   }
 }
 
@@ -356,8 +357,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
   // --
 
-  function onSelectedSelection(value as Object, storageKey as String) as Void {
-    Storage.setValue(storageKey, value as Number);
+  function onSelectedSelection(storageKey as String, value as Application.PropertyValueType) as Void {
+    Storage.setValue(storageKey, value);
   }
 }
 

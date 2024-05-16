@@ -236,7 +236,7 @@ class SettledView extends WatchUi.DataField {
     var y = height / 2;
       dc.drawText(x, y, font, text, justification);
 
-    if (subtext.length() > 0) {
+    if (subtext.length() > 0 && !mActivityPauzed && !$.gShow_lightInfo) {
       dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
       var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
       y = height - Graphics.getFontHeight(fontSub);      
