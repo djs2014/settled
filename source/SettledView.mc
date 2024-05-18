@@ -230,18 +230,25 @@ class SettledView extends WatchUi.DataField {
         break;
     }
 
-    var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-    var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
+    var y;
     var x = width / 2;
-    var y = height / 2;
-      dc.drawText(x, y, font, text, justification);
-
-    if (subtext.length() > 0 && !mActivityPauzed && !$.gShow_lightInfo) {
+    if (subtext.length() > 0 && mActivityPauzed) {
       dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
       var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
-      y = height - Graphics.getFontHeight(fontSub);      
+      if ($.gShow_lightInfo) {
+        y = 0;
+      } else {
+        y = height - Graphics.getFontHeight(fontSub);
+      }
       dc.drawText(x, y, fontSub, subtext, Graphics.TEXT_JUSTIFY_CENTER);
     }
+
+    var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+    var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
+    y = height / 2;
+    dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
+    dc.drawText(x, y, font, text, justification);
+
   }
 
   function drawLightInfo(dc as Dc, width as Number, height as Number, atBottom as Boolean) as Void {
