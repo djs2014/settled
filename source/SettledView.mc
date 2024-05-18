@@ -52,7 +52,7 @@ class SettledView extends WatchUi.DataField {
   hidden var mLightType as Number = 0;
   hidden var mLightMode as Number = 0;
   hidden var mEvent as String = "";
-
+  
   function initialize() {
     DataField.initialize();
 
@@ -167,15 +167,19 @@ class SettledView extends WatchUi.DataField {
       fgColor = Graphics.COLOR_WHITE;
     }
 
+    var labelColor = Graphics.COLOR_LT_GRAY;
+
     if ($.gAlert_no_network) {
       var status = mLightNetwork.getNetworkState();
       switch (status) {
         case AntPlus.LIGHT_NETWORK_STATE_NOT_FORMED:
           fgColor = Graphics.COLOR_WHITE;
           bgColor = Graphics.COLOR_RED;
+          labelColor = Graphics.COLOR_WHITE;          
           break;
         case AntPlus.LIGHT_NETWORK_STATE_FORMING:
           bgColor = Graphics.COLOR_YELLOW;
+          labelColor = Graphics.COLOR_WHITE;          
           break;
         case AntPlus.LIGHT_NETWORK_STATE_FORMED:
           break;
@@ -193,12 +197,12 @@ class SettledView extends WatchUi.DataField {
       var label = $.getDisplayText($.gDisplay_field);
       if (label.length() > 0) {
         var fontLabel = $.getMatchingFont(dc, mFontsLabel, width, height, label) as FontType;
-        dc.setColor(Graphics.COLOR_LT_GRAY, bgColor);
+        dc.setColor(labelColor, bgColor);
         dc.drawText(2, 1, fontLabel, label, Graphics.TEXT_JUSTIFY_LEFT);
       }
     }
     if ($.gShow_lightInfo) {
-      dc.setColor(Graphics.COLOR_LT_GRAY, bgColor);
+      dc.setColor(labelColor, bgColor);
       drawLightInfo(dc, width, height, true);
     }
 
@@ -233,7 +237,7 @@ class SettledView extends WatchUi.DataField {
     var y;
     var x = width / 2;
     if (subtext.length() > 0 && mActivityPauzed) {
-      dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+      dc.setColor(labelColor, Graphics.COLOR_TRANSPARENT);
       var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
       if ($.gShow_lightInfo) {
         y = 0;
