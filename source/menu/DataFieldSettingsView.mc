@@ -53,7 +53,7 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi = new WatchUi.MenuItem("Head light", null, "head_light_mode_", null);
     mi.setSubLabel($.getLightModeFor("head_light_mode_"));
     menu.addItem(mi);
-      
+
     mi = new WatchUi.MenuItem("Tail light", null, "tail_light_mode_", null);
     mi.setSubLabel($.getLightModeFor("tail_light_mode_"));
     menu.addItem(mi);
@@ -68,16 +68,13 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     menu.addItem(mi);
 
     var boolean = Storage.getValue("alert_no_network") ? true : false;
-    menu.addItem(new WatchUi.ToggleMenuItem("No lights alert", null, "alert_no_network", boolean, null));
+    menu.addItem(new WatchUi.ToggleMenuItem("Alert no lights", null, "alert_no_network", boolean, null));
 
     boolean = Storage.getValue("resetDefaults") ? true : false;
     menu.addItem(new WatchUi.ToggleMenuItem("Reset to defaults", null, "resetDefaults", boolean, null));
 
-
-
     boolean = Storage.getValue("debug") ? true : false;
     menu.addItem(new WatchUi.ToggleMenuItem("Debug", null, "debug", boolean, null));
-
 
     var view = new $.DataFieldSettingsView();
     WatchUi.pushView(menu, new $.DataFieldSettingsMenuDelegate(view), WatchUi.SLIDE_IMMEDIATE);

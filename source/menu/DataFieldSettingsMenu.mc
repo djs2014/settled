@@ -40,6 +40,9 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       boolean = Storage.getValue("show_lightInfo") ? true : false;
       dispMenu.addItem(new WatchUi.ToggleMenuItem("Show light info", null, "show_lightInfo", boolean, null));
 
+      boolean = Storage.getValue("show_solar") ? true : false;
+      dispMenu.addItem(new WatchUi.ToggleMenuItem("Show solar %", null, "show_solar", boolean, null));
+
       WatchUi.pushView(dispMenu, new $.GeneralMenuDelegate(self, dispMenu), WatchUi.SLIDE_UP);
       return;
     }
@@ -67,11 +70,20 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("When paused for", null, "head_light_mode_4", null);
+      mi = new WatchUi.MenuItem("When paused for| (seconds)", null, "head_light_mode_4", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
       tlMenu.addItem(mi);
 
       mi = new WatchUi.MenuItem("Set mode to", null, "head_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "head_light_mode_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "head_light_mode_7", null);
       value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
@@ -103,11 +115,20 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("When paused for", null, "tail_light_mode_4", null);
+      mi = new WatchUi.MenuItem("When paused for| (seconds)", null, "tail_light_mode_4", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
       tlMenu.addItem(mi);
 
       mi = new WatchUi.MenuItem("Set mode to", null, "tail_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "tail_light_mode_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "tail_light_mode_7", null);
       value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
@@ -139,11 +160,20 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("When paused for", null, "other_light_mode_4", null);
+      mi = new WatchUi.MenuItem("When paused for| (seconds)", null, "other_light_mode_4", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
       tlMenu.addItem(mi);
 
       mi = new WatchUi.MenuItem("Set mode to", null, "other_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "other_light_mode_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "other_light_mode_7", null);
       value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
@@ -178,7 +208,6 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
 class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
   hidden var _delegate as DataFieldSettingsMenuDelegate;
   hidden var _item as MenuItem?;
-  hidden var _currentPrompt as String = "";
   hidden var _debug as Boolean = false;
 
   function initialize(delegate as DataFieldSettingsMenuDelegate, menu as WatchUi.Menu2) {
@@ -201,7 +230,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
         id.equals("head_light_mode_1") ||
         id.equals("head_light_mode_2") ||
         id.equals("head_light_mode_3") ||
-        id.equals("head_light_mode_5"))
+        id.equals("head_light_mode_5") ||
+        id.equals("head_light_mode_7"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_HEADLIGHT);
       var sp = new selectionMenuPicker("Headlightmode", id as String);
@@ -227,7 +257,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
         id.equals("tail_light_mode_1") ||
         id.equals("tail_light_mode_2") ||
         id.equals("tail_light_mode_3") ||
-        id.equals("tail_light_mode_5"))
+        id.equals("tail_light_mode_5") ||
+        id.equals("tail_light_mode_7"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
 
@@ -255,7 +286,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
         id.equals("other_light_mode_1") ||
         id.equals("other_light_mode_2") ||
         id.equals("other_light_mode_3") ||
-        id.equals("other_light_mode_5"))
+        id.equals("other_light_mode_5") ||
+        id.equals("other_light_mode_7"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_OTHER);
       var sp = new selectionMenuPicker("Otherlightmode", id as String);
@@ -278,7 +310,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     if (id instanceof String && id.equals("display_field")) {
       var sp = new selectionMenuPicker("Display field", id as String);
-      for (var i = 0; i <= 7; i++) {
+      for (var i = 0; i <= 8; i++) {
         sp.add($.getDisplayText(i), "", i);
       }
 
@@ -287,38 +319,23 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
-    _currentPrompt = item.getLabel();
-    var numericOptions = $.parseLabelToOptions(_currentPrompt);
-
-    var currentValue = $.getStorageValue(id as String, 0) as Numeric;
-    if (numericOptions.isFloat) {
-      currentValue = currentValue.toFloat();
-    }
-    var view = new $.NumericInputView(_debug, _currentPrompt, currentValue);
-    view.processOptions(numericOptions);
-
+    // Numeric input
+    var prompt = item.getLabel();
+    var value = $.getStorageValue(id as String, 0) as Numeric;
+    var view = $.getNumericInputView(prompt, value);
     view.setOnAccept(self, :onAcceptNumericinput);
     view.setOnKeypressed(self, :onNumericinput);
 
     Toybox.WatchUi.pushView(view, new $.NumericInputDelegate(_debug, view), WatchUi.SLIDE_RIGHT);
   }
 
-  function onAcceptNumericinput(value as Numeric) as Void {
+  function onAcceptNumericinput(value as Numeric, subLabel as String) as Void {
     try {
       if (_item != null) {
         var storageKey = _item.getId() as String;
-        Storage.setValue(storageKey, value);
 
-        switch (value) {
-          case instanceof Long:
-          case instanceof Number:
-            (_item as MenuItem).setSubLabel(value.format("%.0d"));
-            break;
-          case instanceof Float:
-          case instanceof Double:
-            (_item as MenuItem).setSubLabel(value.format("%.2f"));
-            break;
-        }
+        Storage.setValue(storageKey, value);
+        (_item as MenuItem).setSubLabel(subLabel);
       }
     } catch (ex) {
       ex.printStackTrace();
@@ -334,7 +351,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
   ) as Void {
     // Hack to refresh screen
     WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-    var view = new $.NumericInputView(_debug, _currentPrompt, 0);
+    var view = new $.NumericInputView("", 0);
     view.processOptions(opt);
     view.setEditData(editData, cursorPos, insert, negative);
     view.setOnAccept(self, :onAcceptNumericinput);
@@ -483,6 +500,8 @@ function getDisplayText(value as Number) as String {
       return "F/R derailleur size";
     case FldClock:
       return "Clock";
+    case FldSolarIntensity:
+      return "Solar intensity";
     default:
       return "";
   }
@@ -521,5 +540,5 @@ function getTimerStateAsString(key as Number) as String {
 }
 
 function getStorageNumberAsString(key as String) as String {
-  return ($.getStorageValue(key, 0) as Number).format("%.0d");
+  return ($.getStorageValue(key, 0) as Number).format("%0d");
 }

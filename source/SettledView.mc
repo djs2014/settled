@@ -5,6 +5,7 @@ import Toybox.WatchUi;
 import Toybox.Application;
 import Toybox.AntPlus;
 import Toybox.Time;
+import Toybox.System;
 
 class SettledView extends WatchUi.DataField {
   hidden var mActivityPauzed as Boolean = true;
@@ -52,7 +53,9 @@ class SettledView extends WatchUi.DataField {
   hidden var mLightType as Number = 0;
   hidden var mLightMode as Number = 0;
   hidden var mEvent as String = "";
-  
+
+  hidden var mSolarIntensity as Number = 0;
+
   function initialize() {
     DataField.initialize();
 
@@ -77,28 +80,54 @@ class SettledView extends WatchUi.DataField {
 
     // When paused, count down then optional change mode
     var mode = -1;
-    var maxHeadLightSecInPause = $.gHead_light_mode[4] as Number;
+    var maxHeadLightSecInPause = $.gHead_light_mode[$.gIdxPauseSec] as Number;
     mHeadLightCounter = processPauseCounter(maxHeadLightSecInPause, mHeadLightCounter);
     if (mHeadLightCounter == 0) {
-      mode = $.gHead_light_mode[5] as Number;
+      mode = $.gHead_light_mode[$.gIdxPauseMode] as Number;
       if (mode > -1) {
         mHeadLightMode = mode;
       }
     }
-    var maxTailLightSecInPause = $.gTail_light_mode[4] as Number;
+    var maxTailLightSecInPause = $.gTail_light_mode[$.gIdxPauseSec] as Number;
     mTailLightCounter = processPauseCounter(maxTailLightSecInPause, mTailLightCounter);
     if (mTailLightCounter == 0) {
-      mode = $.gTail_light_mode[5] as Number;
+      mode = $.gTail_light_mode[$.gIdxPauseMode] as Number;
       if (mode > -1) {
         mTailLightMode = mode;
       }
     }
-    var maxOtherLightSecInPause = $.gOther_light_mode[4] as Number;
+    var maxOtherLightSecInPause = $.gOther_light_mode[$.gIdxPauseSec] as Number;
     mOtherLightCounter = processPauseCounter(maxOtherLightSecInPause, mOtherLightCounter);
     if (mOtherLightCounter == 0) {
-      mode = $.gOther_light_mode[5] as Number;
+      mode = $.gOther_light_mode[$.gIdxPauseMode] as Number;
       if (mode > -1) {
         mOtherLightMode = mode;
+      }
+    }
+
+    // Solar intensity
+    if (mSolarIntensity > -1) {
+      var solarIntensity = 0;
+      var solarMode = $.gHead_light_mode[$.gIdxSolarMode] as Number;
+      if (solarMode > -1) {
+        solarIntensity = $.gHead_light_mode[$.gIdxSolarIntensity] as Number;
+        if (mSolarIntensity <= solarIntensity) {
+          mHeadLightMode = solarMode;
+        }
+      }
+      solarMode = $.gTail_light_mode[$.gIdxSolarMode] as Number;
+      if (solarMode > -1) {
+        solarIntensity = $.gTail_light_mode[$.gIdxSolarIntensity] as Number;
+        if (mSolarIntensity <= solarIntensity) {
+          mTailLightMode = solarMode;
+        }
+      }
+      solarMode = $.gOther_light_mode[$.gIdxSolarMode] as Number;
+      if (solarMode > -1) {
+        solarIntensity = $.gOther_light_mode[$.gIdxSolarIntensity] as Number;
+        if (mSolarIntensity <= solarIntensity) {
+          mOtherLightMode = solarMode;
+        }
       }
     }
 
@@ -135,6 +164,17 @@ class SettledView extends WatchUi.DataField {
       case FldClock:
         // @@
         break;
+      case FldSolarIntensity:
+        mValueA = mSolarIntensity;
+        break;
+    }
+
+    var myStats = System.getSystemStats();
+    var solarIntensity = myStats.solarIntensity;
+    if (solarIntensity == null) {
+      mSolarIntensity = -1;
+    } else {
+      mSolarIntensity = solarIntensity;
     }
   }
 
@@ -175,11 +215,11 @@ class SettledView extends WatchUi.DataField {
         case AntPlus.LIGHT_NETWORK_STATE_NOT_FORMED:
           fgColor = Graphics.COLOR_WHITE;
           bgColor = Graphics.COLOR_RED;
-          labelColor = Graphics.COLOR_WHITE;          
+          labelColor = Graphics.COLOR_WHITE;
           break;
         case AntPlus.LIGHT_NETWORK_STATE_FORMING:
           bgColor = Graphics.COLOR_YELLOW;
-          labelColor = Graphics.COLOR_WHITE;          
+          labelColor = Graphics.COLOR_WHITE;
           break;
         case AntPlus.LIGHT_NETWORK_STATE_FORMED:
           break;
@@ -232,15 +272,32 @@ class SettledView extends WatchUi.DataField {
         //fi.decimals = today.sec.format("%02d");
         subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day, today.month]);
         break;
+      case FldSolarIntensity:
+        if (mValueA < 0) {
+          text = "--";
+        } else {
+          text = mValueA.format("%d") + "%";
+        }
+        // Already displayed
+        $.gShow_solar = false;
+        break;
+    }
+
+    // No subtext when active
+    if (!mActivityPauzed) {
+      subtext = "";
+    }
+    if ($.gShow_solar && mSolarIntensity > -1) {
+      subtext = mSolarIntensity.format("%d") + "%";
     }
 
     var y;
     var x = width / 2;
-    if (subtext.length() > 0 && mActivityPauzed) {
+    if (subtext.length() > 0) {
       dc.setColor(labelColor, Graphics.COLOR_TRANSPARENT);
       var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
       if ($.gShow_lightInfo) {
-        y = 0;
+        y = 5;
       } else {
         y = height - Graphics.getFontHeight(fontSub);
       }
@@ -252,7 +309,6 @@ class SettledView extends WatchUi.DataField {
     y = height / 2;
     dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     dc.drawText(x, y, font, text, justification);
-
   }
 
   function drawLightInfo(dc as Dc, width as Number, height as Number, atBottom as Boolean) as Void {
