@@ -53,7 +53,7 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi = new WatchUi.MenuItem("Head light", null, "head_light_mode_", null);
     mi.setSubLabel($.getLightModeFor("head_light_mode_"));
     menu.addItem(mi);
-      
+
     mi = new WatchUi.MenuItem("Tail light", null, "tail_light_mode_", null);
     mi.setSubLabel($.getLightModeFor("tail_light_mode_"));
     menu.addItem(mi);
@@ -61,15 +61,20 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi = new WatchUi.MenuItem("Other light", null, "other_light_mode_", null);
     mi.setSubLabel($.getLightModeFor("other_light_mode_"));
     menu.addItem(mi);
+  
+    mi = new WatchUi.MenuItem("Alerts", null, "alerts", null);
+    menu.addItem(mi);
+   
+    mi = new WatchUi.MenuItem("Test Timer State", null, "test_TimerState", null);
+    var value = getStorageValue(mi.getId() as String, 0) as Number;
+    mi.setSubLabel($.getTimerStateAsString(value));
+    menu.addItem(mi);
 
     var boolean = Storage.getValue("resetDefaults") ? true : false;
     menu.addItem(new WatchUi.ToggleMenuItem("Reset to defaults", null, "resetDefaults", boolean, null));
 
-
-
     boolean = Storage.getValue("debug") ? true : false;
     menu.addItem(new WatchUi.ToggleMenuItem("Debug", null, "debug", boolean, null));
-
 
     var view = new $.DataFieldSettingsView();
     WatchUi.pushView(menu, new $.DataFieldSettingsMenuDelegate(view), WatchUi.SLIDE_IMMEDIATE);

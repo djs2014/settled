@@ -1,8 +1,10 @@
+import Toybox.Application;
 import Toybox.Application.Storage;
 import Toybox.Lang;
 import Toybox.WatchUi;
 import Toybox.System;
 import Toybox.AntPlus;
+import Toybox.Activity;
 
 class DataFieldSettingsMenu extends WatchUi.Menu2 {
   function initialize() {
@@ -38,6 +40,9 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       boolean = Storage.getValue("show_lightInfo") ? true : false;
       dispMenu.addItem(new WatchUi.ToggleMenuItem("Show light info", null, "show_lightInfo", boolean, null));
 
+      boolean = Storage.getValue("show_solar") ? true : false;
+      dispMenu.addItem(new WatchUi.ToggleMenuItem("Show solar %", null, "show_solar", boolean, null));
+
       WatchUi.pushView(dispMenu, new $.GeneralMenuDelegate(self, dispMenu), WatchUi.SLIDE_UP);
       return;
     }
@@ -61,6 +66,24 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       tlMenu.addItem(mi);
 
       mi = new WatchUi.MenuItem("Timer on", null, "head_light_mode_3", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When paused for| (seconds)", null, "head_light_mode_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "head_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "head_light_mode_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "head_light_mode_7", null);
       value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
@@ -92,6 +115,24 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
+      mi = new WatchUi.MenuItem("When paused for| (seconds)", null, "tail_light_mode_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "tail_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "tail_light_mode_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "tail_light_mode_7", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
       WatchUi.pushView(tlMenu, new $.GeneralMenuDelegate(self, tlMenu), WatchUi.SLIDE_UP);
       return;
     }
@@ -119,7 +160,49 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
+      mi = new WatchUi.MenuItem("When paused for| (seconds)", null, "other_light_mode_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "other_light_mode_5", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "other_light_mode_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      tlMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Set mode to", null, "other_light_mode_7", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      tlMenu.addItem(mi);
+
       WatchUi.pushView(tlMenu, new $.GeneralMenuDelegate(self, tlMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
+    if (id instanceof String && id.equals("alerts")) {
+      var alertMenu = new WatchUi.Menu2({ :title => "Alerts" });
+
+      var boolean = Storage.getValue("alert_no_network") ? true : false;
+      alertMenu.addItem(new WatchUi.ToggleMenuItem("Light disconnect-","ed, red screen ", "alert_no_network", boolean, null));
+
+      boolean = Storage.getValue("alert_no_phone") ? true : false;
+      alertMenu.addItem(new WatchUi.ToggleMenuItem("Phone disconnect-", "ed, orange screen", "alert_no_phone", boolean, null));
+
+      WatchUi.pushView(alertMenu, new $.GeneralMenuDelegate(self, alertMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
+    if (id instanceof String && id.equals("test_TimerState")) {
+      var sp = new selectionMenuPicker("Test TimerState", id as String);
+      for (var i = -1; i <= 3; i++) {
+        sp.add($.getTimerStateAsString(i), "", i);
+      }
+
+      sp.setOnSelected(self, :onSelectedSelection, item);
+      sp.show();
       return;
     }
 
@@ -130,15 +213,14 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
   }
 
-  function onSelectedSelection(value as Object, storageKey as String) as Void {
-    Storage.setValue(storageKey, value as Number);
+  function onSelectedSelection(storageKey as String, value as Application.PropertyValueType) as Void {
+    Storage.setValue(storageKey, value);
   }
 }
 
 class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
   hidden var _delegate as DataFieldSettingsMenuDelegate;
   hidden var _item as MenuItem?;
-  hidden var _currentPrompt as String = "";
   hidden var _debug as Boolean = false;
 
   function initialize(delegate as DataFieldSettingsMenuDelegate, menu as WatchUi.Menu2) {
@@ -160,7 +242,9 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       (id.equals("head_light_mode_0") ||
         id.equals("head_light_mode_1") ||
         id.equals("head_light_mode_2") ||
-        id.equals("head_light_mode_3"))
+        id.equals("head_light_mode_3") ||
+        id.equals("head_light_mode_5") ||
+        id.equals("head_light_mode_7"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_HEADLIGHT);
       var sp = new selectionMenuPicker("Headlightmode", id as String);
@@ -185,7 +269,9 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       (id.equals("tail_light_mode_0") ||
         id.equals("tail_light_mode_1") ||
         id.equals("tail_light_mode_2") ||
-        id.equals("tail_light_mode_3"))
+        id.equals("tail_light_mode_3") ||
+        id.equals("tail_light_mode_5") ||
+        id.equals("tail_light_mode_7"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
 
@@ -212,7 +298,9 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       (id.equals("other_light_mode_0") ||
         id.equals("other_light_mode_1") ||
         id.equals("other_light_mode_2") ||
-        id.equals("other_light_mode_3"))
+        id.equals("other_light_mode_3") ||
+        id.equals("other_light_mode_5") ||
+        id.equals("other_light_mode_7"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_OTHER);
       var sp = new selectionMenuPicker("Otherlightmode", id as String);
@@ -235,7 +323,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     if (id instanceof String && id.equals("display_field")) {
       var sp = new selectionMenuPicker("Display field", id as String);
-      for (var i = 0; i <= 6; i++) {
+      for (var i = 0; i <= 8; i++) {
         sp.add($.getDisplayText(i), "", i);
       }
 
@@ -244,38 +332,23 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
-    _currentPrompt = item.getLabel();
-    var numericOptions = $.parseLabelToOptions(_currentPrompt);
-
-    var currentValue = $.getStorageValue(id as String, 0) as Numeric;
-    if (numericOptions.isFloat) {
-      currentValue = currentValue.toFloat();
-    }
-    var view = new $.NumericInputView(_debug, _currentPrompt, currentValue);
-    view.processOptions(numericOptions);
-
+    // Numeric input
+    var prompt = item.getLabel();
+    var value = $.getStorageValue(id as String, 0) as Numeric;
+    var view = $.getNumericInputView(prompt, value);
     view.setOnAccept(self, :onAcceptNumericinput);
     view.setOnKeypressed(self, :onNumericinput);
 
     Toybox.WatchUi.pushView(view, new $.NumericInputDelegate(_debug, view), WatchUi.SLIDE_RIGHT);
   }
 
-  function onAcceptNumericinput(value as Numeric) as Void {
+  function onAcceptNumericinput(value as Numeric, subLabel as String) as Void {
     try {
       if (_item != null) {
         var storageKey = _item.getId() as String;
-        Storage.setValue(storageKey, value);
 
-        switch (value) {
-          case instanceof Long:
-          case instanceof Number:
-            (_item as MenuItem).setSubLabel(value.format("%.0d"));
-            break;
-          case instanceof Float:
-          case instanceof Double:
-            (_item as MenuItem).setSubLabel(value.format("%.2f"));
-            break;
-        }
+        Storage.setValue(storageKey, value);
+        (_item as MenuItem).setSubLabel(subLabel);
       }
     } catch (ex) {
       ex.printStackTrace();
@@ -291,7 +364,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
   ) as Void {
     // Hack to refresh screen
     WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-    var view = new $.NumericInputView(_debug, _currentPrompt, 0);
+    var view = new $.NumericInputView("", 0);
     view.processOptions(opt);
     view.setEditData(editData, cursorPos, insert, negative);
     view.setOnAccept(self, :onAcceptNumericinput);
@@ -314,8 +387,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
   // --
 
-  function onSelectedSelection(value as Object, storageKey as String) as Void {
-    Storage.setValue(storageKey, value as Number);
+  function onSelectedSelection(storageKey as String, value as Application.PropertyValueType) as Void {
+    Storage.setValue(storageKey, value);
   }
 }
 
@@ -438,19 +511,47 @@ function getDisplayText(value as Number) as String {
       return "Rear derailleur size";
     case FldDerailleurFRSize:
       return "F/R derailleur size";
+    case FldClock:
+      return "Clock";
+    case FldSolarIntensity:
+      return "Solar intensity";
     default:
       return "";
   }
 }
 
 function getLightModeFor(key as String) as String {
-  return Lang.format("$1$|$2$|$3$|$4$", [
+  var pauseAction = "";
+  var sec = $.getStorageValue(key + "4", -1) as Number;
+  if (sec > -1) {
+    pauseAction = sec.format("%0d") + ":" + $.getLightModeTextShort($.getStorageValue(key + "5", -1) as Number);
+  }
+  return Lang.format("$1$|$2$|$3$|$4$|$5$", [
     $.getLightModeTextShort($.getStorageValue(key + "0", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "1", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "2", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "3", -1) as Number),
+    pauseAction,
   ]);
 }
+
+function getTimerStateAsString(key as Number) as String {
+  switch (key) {
+    case -1:
+      return "Ignore";
+    case Activity.TIMER_STATE_OFF:
+      return "Off";
+    case Activity.TIMER_STATE_STOPPED:
+      return "Stopped";
+    case Activity.TIMER_STATE_PAUSED:
+      return "Paused";
+    case Activity.TIMER_STATE_ON:
+      return "On";
+    default:
+      return "--";
+  }
+}
+
 function getStorageNumberAsString(key as String) as String {
-  return ($.getStorageValue(key, 0) as Number).format("%.0d");
+  return ($.getStorageValue(key, 0) as Number).format("%0d");
 }

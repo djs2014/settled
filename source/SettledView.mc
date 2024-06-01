@@ -4,12 +4,19 @@ import Toybox.Lang;
 import Toybox.WatchUi;
 import Toybox.Application;
 import Toybox.AntPlus;
+import Toybox.Time;
+import Toybox.System;
 
 class SettledView extends WatchUi.DataField {
   hidden var mActivityPauzed as Boolean = true;
   hidden var mHeadLightMode as Number = -1;
   hidden var mTailLightMode as Number = -1;
   hidden var mOtherLightMode as Number = -1;
+
+  hidden var mHeadLightCounter as Number = -1;
+  hidden var mTailLightCounter as Number = -1;
+  hidden var mOtherLightCounter as Number = -1;
+
   hidden var mTimerState as Activity.TimerState = Activity.TIMER_STATE_OFF;
   hidden var mValueA as Numeric = 0;
   hidden var mValueB as Numeric = 0;
@@ -47,6 +54,10 @@ class SettledView extends WatchUi.DataField {
   hidden var mLightMode as Number = 0;
   hidden var mEvent as String = "";
 
+  hidden var mSolarIntensity as Number = 0;
+  hidden var yOffsetPauzed as Number = 5;
+  hidden var mPhoneConnected as Boolean = false;
+
   function initialize() {
     DataField.initialize();
 
@@ -54,19 +65,86 @@ class SettledView extends WatchUi.DataField {
     mLightNetwork = new AntPlus.LightNetwork(mLightNetworkListener);
   }
 
-  function onLayout(dc as Dc) as Void {}
+  function onLayout(dc as Dc) as Void {
+    // fix for leaving menu, draw complete screen, large field
+    dc.clearClip();
+  }
 
   function compute(info as Activity.Info) as Void {
     mTimerState = $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as Activity.TimerState;
+    if ($.gtest_TimerState > -1) {
+      mTimerState = $.gtest_TimerState as Activity.TimerState;
+    }
 
     mHeadLightMode = $.gHead_light_mode[mTimerState as Number] as Number;
     mTailLightMode = $.gTail_light_mode[mTimerState as Number] as Number;
     mOtherLightMode = $.gOther_light_mode[mTimerState as Number] as Number;
 
+    // When paused, count down then optional change mode
+    var mode = -1;
+    var maxHeadLightSecInPause = $.gHead_light_mode[$.gIdxPauseSec] as Number;
+    mHeadLightCounter = processPauseCounter(maxHeadLightSecInPause, mHeadLightCounter);
+    if (mHeadLightCounter == 0) {
+      mode = $.gHead_light_mode[$.gIdxPauseMode] as Number;
+      if (mode > -1) {
+        mHeadLightMode = mode;
+      }
+    }
+    var maxTailLightSecInPause = $.gTail_light_mode[$.gIdxPauseSec] as Number;
+    mTailLightCounter = processPauseCounter(maxTailLightSecInPause, mTailLightCounter);
+    if (mTailLightCounter == 0) {
+      mode = $.gTail_light_mode[$.gIdxPauseMode] as Number;
+      if (mode > -1) {
+        mTailLightMode = mode;
+      }
+    }
+    var maxOtherLightSecInPause = $.gOther_light_mode[$.gIdxPauseSec] as Number;
+    mOtherLightCounter = processPauseCounter(maxOtherLightSecInPause, mOtherLightCounter);
+    if (mOtherLightCounter == 0) {
+      mode = $.gOther_light_mode[$.gIdxPauseMode] as Number;
+      if (mode > -1) {
+        mOtherLightMode = mode;
+      }
+    }
+
+    // Solar intensity
+    if (mSolarIntensity > -1) {
+      var solarIntensity = 0;
+      var solarMode = $.gHead_light_mode[$.gIdxSolarMode] as Number;
+      if (solarMode > -1) {
+        solarIntensity = $.gHead_light_mode[$.gIdxSolarIntensity] as Number;
+        if (mSolarIntensity <= solarIntensity) {
+          mHeadLightMode = solarMode;
+        }
+      }
+      solarMode = $.gTail_light_mode[$.gIdxSolarMode] as Number;
+      if (solarMode > -1) {
+        solarIntensity = $.gTail_light_mode[$.gIdxSolarIntensity] as Number;
+        if (mSolarIntensity <= solarIntensity) {
+          mTailLightMode = solarMode;
+        }
+      }
+      solarMode = $.gOther_light_mode[$.gIdxSolarMode] as Number;
+      if (solarMode > -1) {
+        solarIntensity = $.gOther_light_mode[$.gIdxSolarIntensity] as Number;
+        if (mSolarIntensity <= solarIntensity) {
+          mOtherLightMode = solarMode;
+        }
+      }
+    }
+
     mBikeLights = mLightNetwork.getBikeLights();
     updateBikeLights();
 
     mActivityPauzed = mTimerState != Activity.TIMER_STATE_ON;
+    mPhoneConnected = System.getDeviceSettings().phoneConnected;
+    var myStats = System.getSystemStats();
+    var solarIntensity = myStats.solarIntensity;
+    if (solarIntensity == null) {
+      mSolarIntensity = -1;
+    } else {
+      mSolarIntensity = solarIntensity;
+    }
 
     mValueA = 0;
     mValueB = 0;
@@ -93,7 +171,27 @@ class SettledView extends WatchUi.DataField {
         mValueA = $.getActivityValue(info, :frontDerailleurSize, 0) as Number;
         mValueB = $.getActivityValue(info, :rearDerailleurSize, 0) as Number;
         break;
+      case FldClock:
+        // @@
+        break;
+      case FldSolarIntensity:
+        mValueA = mSolarIntensity;
+        break;
     }
+  }
+
+  // When paused, countdown then optional change mode
+  function processPauseCounter(maxSecondsPaused as Number, counter as Number) as Number {
+    if (mTimerState != Activity.TIMER_STATE_PAUSED || maxSecondsPaused <= 0) {
+      return maxSecondsPaused;
+    }
+
+    if (counter == -1) {
+      return maxSecondsPaused;
+    } else if (counter == 0) {
+      return 0;
+    }
+    return counter - 1;
   }
 
   function onUpdate(dc as Dc) as Void {
@@ -111,6 +209,30 @@ class SettledView extends WatchUi.DataField {
       fgColor = Graphics.COLOR_WHITE;
     }
 
+    var labelColor = Graphics.COLOR_LT_GRAY;
+
+    if ($.gAlert_no_network) {
+      var status = mLightNetwork.getNetworkState();
+      switch (status) {
+        case AntPlus.LIGHT_NETWORK_STATE_NOT_FORMED:
+          fgColor = Graphics.COLOR_WHITE;
+          bgColor = Graphics.COLOR_RED;
+          labelColor = Graphics.COLOR_WHITE;
+          break;
+        case AntPlus.LIGHT_NETWORK_STATE_FORMING:
+          bgColor = Graphics.COLOR_YELLOW;
+          labelColor = Graphics.COLOR_WHITE;
+          break;
+        case AntPlus.LIGHT_NETWORK_STATE_FORMED:
+          break;
+      }
+    }
+    if ($.gAlert_no_phone && !mPhoneConnected) {
+      fgColor = Graphics.COLOR_WHITE;
+      bgColor = Graphics.COLOR_ORANGE;
+      labelColor = Graphics.COLOR_WHITE;
+    }
+
     dc.setColor(fgColor, bgColor);
     dc.clear();
 
@@ -123,18 +245,19 @@ class SettledView extends WatchUi.DataField {
       var label = $.getDisplayText($.gDisplay_field);
       if (label.length() > 0) {
         var fontLabel = $.getMatchingFont(dc, mFontsLabel, width, height, label) as FontType;
-        dc.setColor(Graphics.COLOR_LT_GRAY, bgColor);
-        dc.drawText(2, 1, fontLabel, label, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.setColor(labelColor, bgColor);
+        dc.drawText(2, yOffsetPauzed, fontLabel, label, Graphics.TEXT_JUSTIFY_LEFT);
       }
     }
     if ($.gShow_lightInfo) {
-      dc.setColor(Graphics.COLOR_LT_GRAY, bgColor);
+      dc.setColor(labelColor, bgColor);
       drawLightInfo(dc, width, height, true);
     }
 
     dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
 
     var text = "";
+    var subtext = "";
     switch ($.gDisplay_field) {
       case FldLights:
         drawLightInfo(dc, width, height, false);
@@ -151,13 +274,55 @@ class SettledView extends WatchUi.DataField {
       case FldDerailleurFRSize:
         text = mValueA.format("%d") + "|" + mValueB.format("%d");
         break;
+      case FldClock:
+        var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+        text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
+        //fi.decimals = today.sec.format("%02d");
+        subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day.format("%02d"), today.month]);
+        break;
+      case FldSolarIntensity:
+        if (mValueA < 0) {
+          text = "--";
+        } else {
+          text = mValueA.format("%d") + "%";
+        }
+        // Already displayed
+        $.gShow_solar = false;
+        break;
     }
 
+    // No subtext when active
+    if (!mActivityPauzed) {
+      subtext = "";
+    }
+    if ($.gShow_solar && mSolarIntensity > -1) {
+      subtext = mSolarIntensity.format("%d") + "% solar intensity";
+      if (mActivityPauzed) {
+        subtext = "";
+      }
+    }
+
+    var y;
+    var x = width / 2;
+    if (subtext.length() > 0) {
+      dc.setColor(labelColor, Graphics.COLOR_TRANSPARENT);
+      var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
+      if ($.gShow_lightInfo) {
+        y = yOffsetPauzed;
+      } else {
+        y = height - Graphics.getFontHeight(fontSub);
+      }
+      dc.drawText(x, y, fontSub, subtext, Graphics.TEXT_JUSTIFY_CENTER);
+    }
+
+    if ($.gAlert_no_phone && !mPhoneConnected) {
+      text = "No phone!";
+    }
+    
     var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
     var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
-    var x = width / 2;
-    var y = height / 2;
-
+    y = height / 2;
+    dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     dc.drawText(x, y, font, text, justification);
   }
 

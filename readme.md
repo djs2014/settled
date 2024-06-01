@@ -23,6 +23,7 @@ Default values are:
 - Timer stopped : light off
 - Timer paused: slow flash
 - Timer on: fast flash
+Option to set different mode after timer paused for x seconds.
 
 Note, after connected to the lights, only the allowed modes are selectable.
 
