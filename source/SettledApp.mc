@@ -67,10 +67,12 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("other_light_mode_7", -1);
 
         Storage.setValue("alert_no_network", true);
+        Storage.setValue("alert_no_phone", true);
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
       $.gAlert_no_network = getStorageValue("alert_no_network", $.gAlert_no_network) as Boolean;
+      $.gAlert_no_phone = getStorageValue("alert_no_phone", $.gAlert_no_phone) as Boolean;
 
       $.gtest_TimerState = $.getStorageValue("test_TimerState", $.gtest_TimerState) as Number;
 
@@ -127,6 +129,7 @@ function getApp() as SettledApp {
 
 var gDebug as Boolean = false;
 var gAlert_no_network as Boolean = true;
+var gAlert_no_phone as Boolean = true;
 // [ timer off, timer stopped, timer paused, timer on, seconds, paused for seconds, drop to solar intensity%, lightmode]
 var gHead_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0, 0, 2];
 var gTail_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0, 0, -1];

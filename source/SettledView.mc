@@ -55,6 +55,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mEvent as String = "";
 
   hidden var mSolarIntensity as Number = 0;
+  hidden var yOffsetPauzed as Number = 5;
+  hidden var mPhoneConnected as Boolean = false;
 
   function initialize() {
     DataField.initialize();
@@ -135,6 +137,14 @@ class SettledView extends WatchUi.DataField {
     updateBikeLights();
 
     mActivityPauzed = mTimerState != Activity.TIMER_STATE_ON;
+    mPhoneConnected = System.getDeviceSettings().phoneConnected;
+    var myStats = System.getSystemStats();
+    var solarIntensity = myStats.solarIntensity;
+    if (solarIntensity == null) {
+      mSolarIntensity = -1;
+    } else {
+      mSolarIntensity = solarIntensity;
+    }
 
     mValueA = 0;
     mValueB = 0;
@@ -167,14 +177,6 @@ class SettledView extends WatchUi.DataField {
       case FldSolarIntensity:
         mValueA = mSolarIntensity;
         break;
-    }
-
-    var myStats = System.getSystemStats();
-    var solarIntensity = myStats.solarIntensity;
-    if (solarIntensity == null) {
-      mSolarIntensity = -1;
-    } else {
-      mSolarIntensity = solarIntensity;
     }
   }
 
@@ -225,6 +227,12 @@ class SettledView extends WatchUi.DataField {
           break;
       }
     }
+    if ($.gAlert_no_phone && !mPhoneConnected) {
+      fgColor = Graphics.COLOR_WHITE;
+      bgColor = Graphics.COLOR_ORANGE;
+      labelColor = Graphics.COLOR_WHITE;
+    }
+
     dc.setColor(fgColor, bgColor);
     dc.clear();
 
@@ -238,7 +246,7 @@ class SettledView extends WatchUi.DataField {
       if (label.length() > 0) {
         var fontLabel = $.getMatchingFont(dc, mFontsLabel, width, height, label) as FontType;
         dc.setColor(labelColor, bgColor);
-        dc.drawText(2, 1, fontLabel, label, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(2, yOffsetPauzed, fontLabel, label, Graphics.TEXT_JUSTIFY_LEFT);
       }
     }
     if ($.gShow_lightInfo) {
@@ -270,7 +278,7 @@ class SettledView extends WatchUi.DataField {
         var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
         text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
         //fi.decimals = today.sec.format("%02d");
-        subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day, today.month]);
+        subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day.format("%02d"), today.month]);
         break;
       case FldSolarIntensity:
         if (mValueA < 0) {
@@ -288,7 +296,10 @@ class SettledView extends WatchUi.DataField {
       subtext = "";
     }
     if ($.gShow_solar && mSolarIntensity > -1) {
-      subtext = mSolarIntensity.format("%d") + "%";
+      subtext = mSolarIntensity.format("%d") + "% solar intensity";
+      if (mActivityPauzed) {
+        subtext = "";
+      }
     }
 
     var y;
@@ -297,13 +308,17 @@ class SettledView extends WatchUi.DataField {
       dc.setColor(labelColor, Graphics.COLOR_TRANSPARENT);
       var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
       if ($.gShow_lightInfo) {
-        y = 5;
+        y = yOffsetPauzed;
       } else {
         y = height - Graphics.getFontHeight(fontSub);
       }
       dc.drawText(x, y, fontSub, subtext, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
+    if ($.gAlert_no_phone && !mPhoneConnected) {
+      text = "No phone!";
+    }
+    
     var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
     var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
     y = height / 2;

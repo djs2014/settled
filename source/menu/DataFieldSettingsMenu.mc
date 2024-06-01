@@ -182,6 +182,19 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+    if (id instanceof String && id.equals("alerts")) {
+      var alertMenu = new WatchUi.Menu2({ :title => "Alerts" });
+
+      var boolean = Storage.getValue("alert_no_network") ? true : false;
+      alertMenu.addItem(new WatchUi.ToggleMenuItem("Light disconnect-","ed, red screen ", "alert_no_network", boolean, null));
+
+      boolean = Storage.getValue("alert_no_phone") ? true : false;
+      alertMenu.addItem(new WatchUi.ToggleMenuItem("Phone disconnect-", "ed, orange screen", "alert_no_phone", boolean, null));
+
+      WatchUi.pushView(alertMenu, new $.GeneralMenuDelegate(self, alertMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
     if (id instanceof String && id.equals("test_TimerState")) {
       var sp = new selectionMenuPicker("Test TimerState", id as String);
       for (var i = -1; i <= 3; i++) {
