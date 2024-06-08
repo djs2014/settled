@@ -140,6 +140,13 @@ function mpsToKmPerHour(metersPerSecond as Numeric?) as Float {
   return ((metersPerSecond * 60 * 60) / 1000.0) as Float;
 }
 
+function kmPerHourToMeterPerSecond(kmPerHour as Numeric?) as Float {
+  if (kmPerHour == null) {
+    return 0.0f;
+  }
+  return ((kmPerHour / 60.0 / 60.0) * 1000.0) as Float;
+}
+
 function getDistanceInMeterOrKm(distanceInMeters as Float) as Float {
   if (distanceInMeters > 1000) {
     return distanceInMeters / 1000.0f;
@@ -462,7 +469,7 @@ function stringRight(str as String, marker as String, dflt as String) as String 
   if (index == null || index + 1 >= str.length()) {
     return dflt;
   }
-  return str.substring(index + 1, null) as String;
+  return str.substring(index + 1, str.length()) as String;
 }
 
 function pointOnCircle_x(x as Number, y as Number, radius as Number, angleInDegrees as Number) as Number {
@@ -472,4 +479,19 @@ function pointOnCircle_x(x as Number, y as Number, radius as Number, angleInDegr
 function pointOnCircle_y(x as Number, y as Number, radius as Number, angleInDegrees as Number) as Number {
   // Convert from degrees to radians
   return (radius * Math.sin(deg2rad(angleInDegrees)) + y).toNumber();
+}
+
+function hasRequiredCIQVersion(requiredVersion as String) as Boolean {
+  if (requiredVersion.length() == 0) {
+    return true;
+  }
+  var settings = System.getDeviceSettings();
+  var mkversion = settings.monkeyVersion;
+  var versionString = Lang.format("$1$.$2$.$3$", mkversion);
+
+  if (versionString has :compareTo) {
+    return versionString.compareTo(requiredVersion) >= 0;
+  } else {
+    return false;
+  }  
 }

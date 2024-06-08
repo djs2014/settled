@@ -6,6 +6,7 @@ import Toybox.Application;
 import Toybox.AntPlus;
 import Toybox.Time;
 import Toybox.System;
+import Toybox.Attention;
 
 class SettledView extends WatchUi.DataField {
   hidden var mActivityPauzed as Boolean = true;
@@ -57,12 +58,23 @@ class SettledView extends WatchUi.DataField {
   hidden var mSolarIntensity as Number = 0;
   hidden var yOffsetPauzed as Number = 5;
   hidden var mPhoneConnected as Boolean = false;
+  hidden var mAlertNoPhoneCounter as Number = -1;
+  hidden var mAlertNoPhone as Boolean = false;
+  hidden var mUseFontsNumbers as Boolean = true;
 
   function initialize() {
     DataField.initialize();
 
     mLightNetworkListener = new BikeLightNetworkListener(self);
     mLightNetwork = new AntPlus.LightNetwork(mLightNetworkListener);
+
+    mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
+    mAlertNoPhone = false;
+
+    mUseFontsNumbers = false;
+    if ($.hasRequiredCIQVersion("5.0.0")) {
+      mUseFontsNumbers = true;
+    }
   }
 
   function onLayout(dc as Dc) as Void {
@@ -178,6 +190,44 @@ class SettledView extends WatchUi.DataField {
         mValueA = mSolarIntensity;
         break;
     }
+
+    if (mPhoneConnected || !$.gAlert_no_phone) {
+      mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
+      mAlertNoPhone = false;
+    } else {
+      if (mAlertNoPhoneCounter > -1) {
+        mAlertNoPhoneCounter = mAlertNoPhoneCounter - 1;
+      }
+      if (mAlertNoPhoneCounter == 0) {
+        // Signal alert -> screen, beep
+        mAlertNoPhone = true;
+      }
+    }
+
+    // @@ TODO gAlert_no_phone_Beep_Moving
+    if (mAlertNoPhone && $.gAlert_no_phone_Beep_Moving > 0 && mAlertNoPhoneCounter == 0) {
+      // Signal alert -> screen, beep
+      var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
+      if (speed <= $.gAlert_Stopped_Speed_mps) {
+        playAlertWhenStopped();
+      } else {
+        playAlertWhenMoving();
+      }
+    }
+  }
+
+  function playAlertWhenStopped() as Void {
+    if (!(Attention has :playTone) || !System.getDeviceSettings().tonesOn || $.gAlert_no_phone_Beep_Stopped == 0) {
+      return;
+    }
+    // @@ counter for beep
+    Attention.playTone(Attention.TONE_CANARY);
+  }
+  function playAlertWhenMoving() as Void {
+    if (!(Attention has :playTone) || !System.getDeviceSettings().tonesOn || $.gAlert_no_phone_Beep_Moving == 0) {
+      return;
+    }
+    Attention.playTone(Attention.TONE_ALERT_LO);
   }
 
   // When paused, countdown then optional change mode
@@ -227,11 +277,12 @@ class SettledView extends WatchUi.DataField {
           break;
       }
     }
-    if ($.gAlert_no_phone && !mPhoneConnected) {
-      fgColor = Graphics.COLOR_WHITE;
-      bgColor = Graphics.COLOR_ORANGE;
-      labelColor = Graphics.COLOR_WHITE;
-    }
+    // if ($.gAlert_no_phone && !mPhoneConnected) {
+    // if (mAlertNoPhone) {
+    //   fgColor = Graphics.COLOR_WHITE;
+    //   bgColor = Graphics.COLOR_ORANGE;
+    //   labelColor = Graphics.COLOR_WHITE;
+    // }
 
     dc.setColor(fgColor, bgColor);
     dc.clear();
@@ -315,12 +366,21 @@ class SettledView extends WatchUi.DataField {
       dc.drawText(x, y, fontSub, subtext, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
-    if ($.gAlert_no_phone && !mPhoneConnected) {
+    // if ($.gAlert_no_phone && !mPhoneConnected) {
+    if (mAlertNoPhone) {
+      fgColor = Graphics.COLOR_WHITE;
+      bgColor = Graphics.COLOR_ORANGE;
+      labelColor = Graphics.COLOR_WHITE;
+      dc.setColor(fgColor, bgColor);
+      dc.clear();
       text = "No phone!";
     }
-    
+
     var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
     var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
+    if (!mUseFontsNumbers) {
+      font = $.getMatchingFont(dc, mFonts, width, height, text) as FontType;
+    }
     y = height / 2;
     dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     dc.drawText(x, y, font, text, justification);

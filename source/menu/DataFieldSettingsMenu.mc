@@ -186,10 +186,31 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       var alertMenu = new WatchUi.Menu2({ :title => "Alerts" });
 
       var boolean = Storage.getValue("alert_no_network") ? true : false;
-      alertMenu.addItem(new WatchUi.ToggleMenuItem("Light disconnect-","ed, red screen ", "alert_no_network", boolean, null));
+      alertMenu.addItem(
+        new WatchUi.ToggleMenuItem("Light disconnect-", "ed, red screen ", "alert_no_network", boolean, null)
+      );
 
       boolean = Storage.getValue("alert_no_phone") ? true : false;
-      alertMenu.addItem(new WatchUi.ToggleMenuItem("Phone disconnect-", "ed, orange screen", "alert_no_phone", boolean, null));
+      alertMenu.addItem(
+        new WatchUi.ToggleMenuItem("Phone disconnect-", "ed, orange screen", "alert_no_phone", boolean, null)
+      );
+
+      var mi = new WatchUi.MenuItem("Phone alert after| (seconds)", null, "alert_no_phone_sec", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      alertMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Phone alert moving|0~1 (times)", null, "alert_no_phone_beep_moving", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " times");
+      alertMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Phone alert stopped|0~1 (times)", null, "alert_no_phone_beep_stopped", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " times");
+      alertMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Stopped speed lower than|0.0~10 (kmph/3.599999997)", null, "alert_stopped_speed_mps", null);
+      var mps = $.getStorageValue(mi.getId() as String, 0) as Float;
+      mi.setSubLabel((mps * 3.599999997f).format("%0.2f") + " kmph");
+      alertMenu.addItem(mi);
 
       WatchUi.pushView(alertMenu, new $.GeneralMenuDelegate(self, alertMenu), WatchUi.SLIDE_UP);
       return;
@@ -555,3 +576,4 @@ function getTimerStateAsString(key as Number) as String {
 function getStorageNumberAsString(key as String) as String {
   return ($.getStorageValue(key, 0) as Number).format("%0d");
 }
+
