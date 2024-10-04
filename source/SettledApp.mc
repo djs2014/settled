@@ -68,11 +68,19 @@ class SettledApp extends Application.AppBase {
 
         Storage.setValue("alert_no_network", true);
         Storage.setValue("alert_no_phone", true);
+        Storage.setValue("alert_no_phone_sec", 3);
+        Storage.setValue("alert_no_phone_beep_moving", 0);
+        Storage.setValue("alert_no_phone_beep_stopped", 1);
+        Storage.setValue("alert_stopped_speed_mps", 0.8f);
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
       $.gAlert_no_network = getStorageValue("alert_no_network", $.gAlert_no_network) as Boolean;
       $.gAlert_no_phone = getStorageValue("alert_no_phone", $.gAlert_no_phone) as Boolean;
+      $.gAlert_no_phone_Sec = getStorageValue("alert_no_phone_sec", $.gAlert_no_phone_Sec) as Number;
+      $.gAlert_no_phone_Beep_Moving = getStorageValue("alert_no_phone_beep_moving", $.gAlert_no_phone_Beep_Moving) as Number;
+      $.gAlert_no_phone_Beep_Stopped = getStorageValue("alert_no_phone_beep_stopped", $.gAlert_no_phone_Beep_Stopped) as Number;
+      $.gAlert_Stopped_Speed_mps = getStorageValue("alert_stopped_speed_mps", $.gAlert_Stopped_Speed_mps) as Float;
 
       $.gtest_TimerState = $.getStorageValue("test_TimerState", $.gtest_TimerState) as Number;
 
@@ -130,6 +138,11 @@ function getApp() as SettledApp {
 var gDebug as Boolean = false;
 var gAlert_no_network as Boolean = true;
 var gAlert_no_phone as Boolean = true;
+var gAlert_no_phone_Sec as Number = 3;
+var gAlert_no_phone_Beep_Moving as Number = 0;
+var gAlert_no_phone_Beep_Stopped as Number = 1;
+var gAlert_Stopped_Speed_mps as Float = 0.8f;
+
 // [ timer off, timer stopped, timer paused, timer on, seconds, paused for seconds, drop to solar intensity%, lightmode]
 var gHead_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0, 0, 2];
 var gTail_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0, 0, -1];

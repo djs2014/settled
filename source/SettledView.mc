@@ -6,6 +6,7 @@ import Toybox.Application;
 import Toybox.AntPlus;
 import Toybox.Time;
 import Toybox.System;
+import Toybox.Attention;
 
 class SettledView extends WatchUi.DataField {
   hidden var mActivityPauzed as Boolean = true;
@@ -57,12 +58,25 @@ class SettledView extends WatchUi.DataField {
   hidden var mSolarIntensity as Number = 0;
   hidden var yOffsetPauzed as Number = 5;
   hidden var mPhoneConnected as Boolean = false;
+  hidden var mAlertNoPhoneCounter as Number = -1;
+  hidden var mAlertNoPhone as Boolean = false;
+  hidden var mUseFontsNumbers as Boolean = true;
+  hidden var mActivityNeverHappened as Boolean = true;
 
   function initialize() {
     DataField.initialize();
 
     mLightNetworkListener = new BikeLightNetworkListener(self);
     mLightNetwork = new AntPlus.LightNetwork(mLightNetworkListener);
+
+    mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
+    mAlertNoPhone = false;
+    mActivityNeverHappened = true;
+
+    mUseFontsNumbers = false;
+    if ($.hasRequiredCIQVersion("5.0.0")) {
+      mUseFontsNumbers = true;
+    }
   }
 
   function onLayout(dc as Dc) as Void {
@@ -75,6 +89,7 @@ class SettledView extends WatchUi.DataField {
     if ($.gtest_TimerState > -1) {
       mTimerState = $.gtest_TimerState as Activity.TimerState;
     }
+    mActivityNeverHappened = mTimerState == Activity.TIMER_STATE_OFF;
 
     mHeadLightMode = $.gHead_light_mode[mTimerState as Number] as Number;
     mTailLightMode = $.gTail_light_mode[mTimerState as Number] as Number;
@@ -108,7 +123,7 @@ class SettledView extends WatchUi.DataField {
     }
 
     // Solar intensity
-    if (mSolarIntensity > -1) {
+    if (mSolarIntensity >= -1) {
       var solarIntensity = 0;
       var solarMode = $.gHead_light_mode[$.gIdxSolarMode] as Number;
       if (solarMode > -1) {
@@ -141,7 +156,7 @@ class SettledView extends WatchUi.DataField {
     var myStats = System.getSystemStats();
     var solarIntensity = myStats.solarIntensity;
     if (solarIntensity == null) {
-      mSolarIntensity = -1;
+      mSolarIntensity = -2;
     } else {
       mSolarIntensity = solarIntensity;
     }
@@ -178,6 +193,57 @@ class SettledView extends WatchUi.DataField {
         mValueA = mSolarIntensity;
         break;
     }
+
+    if (mPhoneConnected || !$.gAlert_no_phone) {
+      mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
+      mAlertNoPhone = false;
+    } else {
+      if (mAlertNoPhoneCounter > -1) {
+        mAlertNoPhoneCounter = mAlertNoPhoneCounter - 1;
+      }
+      if (mAlertNoPhoneCounter == 0) {
+        // Signal alert -> screen, beep
+        mAlertNoPhone = true;
+      }
+    }
+
+    if (
+      mAlertNoPhone &&
+      mAlertNoPhoneCounter == 0 &&
+      ($.gAlert_no_phone_Beep_Moving > 0 || $.gAlert_no_phone_Beep_Stopped > 0)
+    ) {
+      // Signal alert -> screen, beep
+      var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
+      if (speed <= $.gAlert_Stopped_Speed_mps) {
+        playAlertWhenStopped();
+      } else {
+        playAlertWhenMoving();
+      }
+    }
+  }
+
+  function playAlertWhenStopped() as Void {
+    if (
+      mActivityNeverHappened ||
+      !(Attention has :playTone) ||
+      !System.getDeviceSettings().tonesOn ||
+      $.gAlert_no_phone_Beep_Stopped == 0
+    ) {
+      return;
+    }
+    // @@ counter for beep
+    Attention.playTone(Attention.TONE_CANARY);
+  }
+  function playAlertWhenMoving() as Void {
+    if (
+      mActivityNeverHappened ||
+      !(Attention has :playTone) ||
+      !System.getDeviceSettings().tonesOn ||
+      $.gAlert_no_phone_Beep_Moving == 0
+    ) {
+      return;
+    }
+    Attention.playTone(Attention.TONE_KEY);
   }
 
   // When paused, countdown then optional change mode
@@ -227,11 +293,12 @@ class SettledView extends WatchUi.DataField {
           break;
       }
     }
-    if ($.gAlert_no_phone && !mPhoneConnected) {
-      fgColor = Graphics.COLOR_WHITE;
-      bgColor = Graphics.COLOR_ORANGE;
-      labelColor = Graphics.COLOR_WHITE;
-    }
+    // if ($.gAlert_no_phone && !mPhoneConnected) {
+    // if (mAlertNoPhone) {
+    //   fgColor = Graphics.COLOR_WHITE;
+    //   bgColor = Graphics.COLOR_ORANGE;
+    //   labelColor = Graphics.COLOR_WHITE;
+    // }
 
     dc.setColor(fgColor, bgColor);
     dc.clear();
@@ -315,12 +382,21 @@ class SettledView extends WatchUi.DataField {
       dc.drawText(x, y, fontSub, subtext, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
-    if ($.gAlert_no_phone && !mPhoneConnected) {
+    // if ($.gAlert_no_phone && !mPhoneConnected) {
+    if (mAlertNoPhone) {
+      fgColor = Graphics.COLOR_WHITE;
+      bgColor = Graphics.COLOR_ORANGE;
+      labelColor = Graphics.COLOR_WHITE;
+      dc.setColor(fgColor, bgColor);
+      dc.clear();
       text = "No phone!";
     }
-    
+
     var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
     var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
+    if (!mUseFontsNumbers) {
+      font = $.getMatchingFont(dc, mFonts, width, height, text) as FontType;
+    }
     y = height / 2;
     dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     dc.drawText(x, y, font, text, justification);
@@ -538,15 +614,20 @@ function storeCapableLightModes(bikeLights as Lang.Array<AntPlus.LightNetworkSta
   if (bikeLights == null || bikeLights.size() == 0) {
     return;
   }
+  try {
+    var lights = bikeLights as Array;
+    for (var i = 0; i < lights.size(); i++) {
+      var light = lights[i] as BikeLight;
 
-  var lights = bikeLights as Array;
-  for (var i = 0; i < lights.size(); i++) {
-    var light = lights[i] as BikeLight;
-
-    if (light != null) {
-      var key = "lightmodes_" + $.getBikeLightTypeText(light.type as Number);
-      Storage.setValue(key, light.getCapableModes());
+      if (light != null) {
+        var key = "lightmodes_" + $.getBikeLightTypeText(light.type as Number);
+        // @@ bug in CIQ 7.2.0 passing Array<Number>
+        Storage.setValue(key, light.getCapableModes() as Array<Application.PropertyValueType>);
+      }
     }
+  } catch (ex) {
+    System.println(ex.getErrorMessage());
+    ex.printStackTrace();
   }
 }
 
