@@ -1,3 +1,8 @@
+fix bug
+
+numinput
+ - fix 830 screen width, bigger squares based on width of screen
+
 alerts
 - only when timer activity on?
 - alert after x seconds

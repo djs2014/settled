@@ -70,7 +70,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("alert_no_phone", true);
         Storage.setValue("alert_no_phone_sec", 3);
         Storage.setValue("alert_no_phone_beep_moving", 0);
-        Storage.setValue("alert_no_phone_beep_stopped", 2);
+        Storage.setValue("alert_no_phone_beep_stopped", 1);
         Storage.setValue("alert_stopped_speed_mps", 0.8f);
       }
 
@@ -140,7 +140,7 @@ var gAlert_no_network as Boolean = true;
 var gAlert_no_phone as Boolean = true;
 var gAlert_no_phone_Sec as Number = 3;
 var gAlert_no_phone_Beep_Moving as Number = 0;
-var gAlert_no_phone_Beep_Stopped as Number = 2;
+var gAlert_no_phone_Beep_Stopped as Number = 1;
 var gAlert_Stopped_Speed_mps as Float = 0.8f;
 
 // [ timer off, timer stopped, timer paused, timer on, seconds, paused for seconds, drop to solar intensity%, lightmode]

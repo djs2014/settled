@@ -6,7 +6,7 @@
     "configurations": [
 
         {
-            "type": "monkeyc",
+            "type": "omonkeyc",
             "request": "launch",
             "name": "Run",
             "stopAtLaunch": false,

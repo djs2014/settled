@@ -79,7 +79,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "head_light_mode_6", null);
+      mi = new WatchUi.MenuItem("When solar drops|-1~100 (%)", null, "head_light_mode_6", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
       tlMenu.addItem(mi);
 
@@ -124,7 +124,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "tail_light_mode_6", null);
+      mi = new WatchUi.MenuItem("When solar drops|-1~100 (%)", null, "tail_light_mode_6", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
       tlMenu.addItem(mi);
 
@@ -169,7 +169,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       tlMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("When solar drops|0~100 (%)", null, "other_light_mode_6", null);
+      mi = new WatchUi.MenuItem("When solar drops|-1~100 (%)", null, "other_light_mode_6", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
       tlMenu.addItem(mi);
 
