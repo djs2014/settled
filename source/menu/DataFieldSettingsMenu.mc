@@ -216,6 +216,32 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+   if (id instanceof String && id.equals("backlight")) {
+      var blightMenu = new WatchUi.Menu2({ :title => "Backlight" });
+
+      var boolean = Storage.getValue("backlight_on") ? true : false;
+      blightMenu.addItem(
+        new WatchUi.ToggleMenuItem("Backlight", null, "backlight_on", boolean, null)
+      );
+      
+      boolean = Storage.getValue("backlight_at_night") ? true : false;
+      blightMenu.addItem(
+        new WatchUi.ToggleMenuItem("Only at night", null, "backlight_at_night", boolean, null)
+      );
+
+      var mi = new WatchUi.MenuItem("Trigger after| (seconds)", null, "backlight_on_sec", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      blightMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Trigger after| (meters)", null, "backlight_on_meters", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " meters");
+      blightMenu.addItem(mi);     
+
+      WatchUi.pushView(blightMenu, new $.GeneralMenuDelegate(self, blightMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
+
     if (id instanceof String && id.equals("test_TimerState")) {
       var sp = new selectionMenuPicker("Test TimerState", id as String);
       for (var i = -1; i <= 3; i++) {

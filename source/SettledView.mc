@@ -63,6 +63,12 @@ class SettledView extends WatchUi.DataField {
   hidden var mUseFontsNumbers as Boolean = true;
   hidden var mActivityNeverHappened as Boolean = true;
 
+  hidden var mLat as Double = 0d;
+  hidden var mLon as Double = 0d;
+  hidden var mCurrentLocation as CurrentLocation;
+  hidden var mBackLightSeconds as Number = -1;
+  hidden var mBackLightMeters as Number = -1;
+  
   function initialize() {
     DataField.initialize();
 
@@ -77,6 +83,14 @@ class SettledView extends WatchUi.DataField {
     if ($.hasRequiredCIQVersion("5.0.0")) {
       mUseFontsNumbers = true;
     }
+
+    mCurrentLocation = new CurrentLocation();
+    mCurrentLocation.setOnLocationChanged(self, :onLocationChanged);
+  }
+
+  function onLocationChanged(degrees as Array<Double>) as Void {
+    mLat = degrees[0];
+    mLon = degrees[1];    
   }
 
   function onLayout(dc as Dc) as Void {
@@ -220,6 +234,10 @@ class SettledView extends WatchUi.DataField {
         playAlertWhenMoving();
       }
     }
+
+    mCurrentLocation.onCompute(info);
+    var elapsedDistance = $.getActivityValue(info, :elapsedDistance, 0.0f) as Float;
+    processBackLightTrigger(elapsedDistance.toNumber());
   }
 
   function playAlertWhenStopped() as Void {
@@ -244,6 +262,58 @@ class SettledView extends WatchUi.DataField {
       return;
     }
     Attention.playTone(Attention.TONE_KEY);
+  }
+
+  function processBackLightTrigger(elapsedDistance as Number) as Void {
+    if (!$.gBacklight_on) { return; }
+    if ($.gBacklight_at_night) {
+      if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
+        return;
+      }
+    }
+    
+    if ($.gBacklight_on_sec == 0) {
+      mBackLightSeconds = -1;
+    } else {
+      if (mBackLightSeconds < 0) {
+        mBackLightSeconds = $.gBacklight_on_sec;
+      } else if (mBackLightSeconds == 0) {
+        turnBacklightOn();
+      } 
+      mBackLightSeconds = mBackLightSeconds - 1;            
+    }
+
+    if ($.gBacklight_on_meters == 0) {
+      mBackLightMeters = -1;
+    } else {
+      if (mBackLightMeters < elapsedDistance) {
+        mBackLightMeters = elapsedDistance + $.gBacklight_on_meters;
+      } else {
+        turnBacklightOn();        
+      } 
+      
+    }
+
+    System.println([mBackLightSeconds, mBackLightMeters, elapsedDistance]);
+  }
+
+  function turnBacklightOn() as Void {
+    try {
+      Attention.backlight(true);
+    } catch (ex) {
+      System.println(ex.getErrorMessage());
+      ex.printStackTrace();
+    }
+  }
+
+  function isNightTime() as Boolean {
+    try {
+    
+
+
+    } catch(ex) {
+      return false;
+    }
   }
 
   // When paused, countdown then optional change mode
@@ -652,5 +722,5 @@ function getBikeLightTypeText(value as Number) as String {
       return "Other";
     default:
       return "--";
-  }
+  } 
 }
