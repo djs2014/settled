@@ -42,7 +42,7 @@ class SettledView extends WatchUi.DataField {
     Graphics.FONT_TINY,
     Graphics.FONT_SYSTEM_SMALL,
     Graphics.FONT_SYSTEM_MEDIUM,
-    // Graphics.FONT_SYSTEM_LARGE,
+    Graphics.FONT_SYSTEM_LARGE,
   ];
 
   // ?? hidden var mBikeLights as Lang.Array<AntPlus.BikeLight>?;
@@ -278,7 +278,7 @@ class SettledView extends WatchUi.DataField {
       if (mBackLightSeconds < 0) {
         mBackLightSeconds = $.gBacklight_on_sec;
       } else if (mBackLightSeconds == 0) {
-        turnBacklightOn();
+        turnBacklightOn();        
       } 
       mBackLightSeconds = mBackLightSeconds - 1;            
     }
@@ -288,13 +288,10 @@ class SettledView extends WatchUi.DataField {
     } else {
       if (mBackLightMeters < elapsedDistance) {
         mBackLightMeters = elapsedDistance + $.gBacklight_on_meters;
-      } else {
-        turnBacklightOn();        
-      } 
-      
+        turnBacklightOn();                
+      }             
     }
-
-    System.println([mBackLightSeconds, mBackLightMeters, elapsedDistance]);
+    // System.println([mBackLightSeconds, mBackLightMeters, elapsedDistance, $.gBacklight_on_meters]);
   }
 
   function turnBacklightOn() as Void {
