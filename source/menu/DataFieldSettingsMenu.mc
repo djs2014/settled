@@ -223,6 +223,10 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       blightMenu.addItem(
         new WatchUi.ToggleMenuItem("Backlight", null, "backlight_on", boolean, null)
       );
+      boolean = Storage.getValue("backlight_on_alerts") ? true : false;
+      blightMenu.addItem(
+        new WatchUi.ToggleMenuItem("On for alerts", null, "backlight_on_alerts", boolean, null)
+      );
       
       boolean = Storage.getValue("backlight_at_night") ? true : false;
       blightMenu.addItem(

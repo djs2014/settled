@@ -74,6 +74,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("alert_stopped_speed_mps", 0.8f);
 
         Storage.setValue("backlight_on", false);
+        Storage.setValue("backlight_on_alerts", false);
         Storage.setValue("backlight_at_night", true);
         Storage.setValue("backlight_on_sec", 0);
         Storage.setValue("backlight_on_meters", 1000);
@@ -129,6 +130,8 @@ class SettledApp extends Application.AppBase {
       $.gShow_solar = $.getStorageValue("show_solar", $.gShow_solar) as Boolean;
 
       $.gBacklight_on = $.getStorageValue("backlight_on", $.gBacklight_on) as Boolean;
+      $.gBacklight_on_alerts = $.getStorageValue("backlight_on_alerts", $.gBacklight_on_alerts) as Boolean;
+      $.gBacklight_on_meters = $.getStorageValue("backlight_on_alerts", $.gBacklight_on_meters) as Number;
       $.gBacklight_at_night = $.getStorageValue("backlight_at_night", $.gBacklight_at_night) as Boolean;
       $.gBacklight_on_sec = $.getStorageValue("backlight_on_sec", $.gBacklight_on_sec) as Number;
       $.gBacklight_on_meters = $.getStorageValue("backlight_on_meters", $.gBacklight_on_meters) as Number;
@@ -170,6 +173,7 @@ var gShow_lightInfo as Boolean = false;
 var gShow_solar as Boolean = false;
 
 var gBacklight_on as Boolean = false;
+var gBacklight_on_alerts as Boolean = false;
 var gBacklight_at_night as Boolean = true;
 var gBacklight_on_sec as Number = 0;
 var gBacklight_on_meters as Number = 1000;

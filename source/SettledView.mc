@@ -227,6 +227,7 @@ class SettledView extends WatchUi.DataField {
       ($.gAlert_no_phone_Beep_Moving > 0 || $.gAlert_no_phone_Beep_Stopped > 0)
     ) {
       // Signal alert -> screen, beep
+      alertBacklight();
       var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
       if (speed <= $.gAlert_Stopped_Speed_mps) {
         playAlertWhenStopped();
@@ -263,7 +264,10 @@ class SettledView extends WatchUi.DataField {
     }
     Attention.playTone(Attention.TONE_KEY);
   }
-
+  function alertBacklight() as Void {
+     if (!$.gBacklight_on_alerts) { return; }
+     turnBacklightOn();  
+  }
   function processBackLightTrigger(elapsedDistance as Number) as Void {
     if (!$.gBacklight_on) { return; }
     if ($.gBacklight_at_night) {
