@@ -178,6 +178,10 @@ var gBacklight_at_night as Boolean = true;
 var gBacklight_on_sec as Number = 0;
 var gBacklight_on_meters as Number = 1000;
       
+var gBrakelight_on as Boolean = false;
+var gBrakelight_on_perc as Float = 2.0f;
+var gBrakelightMode as Number = 7; // Fast flash, TODO - select this
+
 public enum FieldDisplay {
   FldLights = 0,
   FldDerailleurFIndex = 1,

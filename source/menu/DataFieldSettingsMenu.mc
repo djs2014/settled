@@ -245,6 +245,24 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+    if (id instanceof String && id.equals("brakelight")) {
+      var brakeMenu = new WatchUi.Menu2({ :title => "Brake light" });
+
+      var boolean = Storage.getValue("brake light on") ? true : false;
+      brakeMenu.addItem(
+        new WatchUi.ToggleMenuItem("Brake light", null, "brakelight_on", boolean, null)
+      );
+
+      var mi = new WatchUi.MenuItem("Speed slower|0.0~100 (%)", null, "brakelight_on_perc", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      brakeMenu.addItem(mi);
+
+// TODO x perc -> light mode fast flash
+// TODO 2x perc -> light mode .. 
+
+       WatchUi.pushView(blightMenu, new $.GeneralMenuDelegate(self, blightMenu), WatchUi.SLIDE_UP);
+      return;
+    }
 
     if (id instanceof String && id.equals("test_TimerState")) {
       var sp = new selectionMenuPicker("Test TimerState", id as String);

@@ -52,6 +52,20 @@ function percentageOf(value as Numeric?, max as Numeric?) as Numeric {
   return value / (max / 100.0);
 }
 
+function percentageDifference(valueA as Numeric?, valueB as Numeric?) as Numeric {
+  if (valueA == null || valueB == null || valueA == 0.0f || valueB == 0.0f) {
+    return 0.0f;
+  }
+  
+  var diff = valueA - valueB;
+  if (diff < 0.0f) {
+    diff = diff * -1.0f;
+  }
+
+  // Perc difference
+  return (diff / ((valueA + valueB) / 2.0f)) * 100.0f;
+}
+
 function drawPercentageLine(
   dc as Dc,
   x as Number,

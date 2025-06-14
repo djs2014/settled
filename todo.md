@@ -1,3 +1,7 @@
+break light
+x% less than previous y seconds
+-> fast flash
+
 fix bug
 
 

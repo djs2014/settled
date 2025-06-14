@@ -69,6 +69,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mBackLightSeconds as Number = -1;
   hidden var mBackLightMeters as Number = -1;
   
+  hidden var mPreviousSpeed as Float = 0.0f;
+
   function initialize() {
     DataField.initialize();
 
@@ -99,6 +101,8 @@ class SettledView extends WatchUi.DataField {
   }
 
   function compute(info as Activity.Info) as Void {
+    var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
+
     mTimerState = $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as Activity.TimerState;
     if ($.gtest_TimerState > -1) {
       mTimerState = $.gtest_TimerState as Activity.TimerState;
@@ -160,6 +164,15 @@ class SettledView extends WatchUi.DataField {
           mOtherLightMode = solarMode;
         }
       }
+    }
+
+    // Brake light, when speed drops % in 1 second (onCompute interval)
+    if ($.gBrakelight_on) {
+      if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f && $.percentageDifference(speed, mPreviousSpeed) >= $.gBrakelight_on_perc) {
+        mTailLightMode = $.gBrakelightMode;
+      }
+
+      mPreviousSpeed = speed;
     }
 
     mBikeLights = mLightNetwork.getBikeLights();
@@ -228,7 +241,7 @@ class SettledView extends WatchUi.DataField {
     ) {
       // Signal alert -> screen, beep
       alertBacklight();
-      var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
+      //var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
       if (speed <= $.gAlert_Stopped_Speed_mps) {
         playAlertWhenStopped();
       } else {
