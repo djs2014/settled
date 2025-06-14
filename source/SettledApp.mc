@@ -78,6 +78,9 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("backlight_at_night", true);
         Storage.setValue("backlight_on_sec", 0);
         Storage.setValue("backlight_on_meters", 1000);
+       
+        Storage.setValue("brakelight_on", true);
+        Storage.setValue("brakelight_on_perc", 1.7f);
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -136,6 +139,9 @@ class SettledApp extends Application.AppBase {
       $.gBacklight_on_sec = $.getStorageValue("backlight_on_sec", $.gBacklight_on_sec) as Number;
       $.gBacklight_on_meters = $.getStorageValue("backlight_on_meters", $.gBacklight_on_meters) as Number;
           
+      $.gBrakelight_on = $.getStorageValue("brakelight_on", $.gBrakelight_on) as Boolean;
+      $.gBrakelight_on_perc = $.getStorageValue("brakelight_on_perc", $.gBrakelight_on_perc) as Float;
+         
       System.println("User settings loaded");
     } catch (ex) {
       System.println(ex.getErrorMessage());
@@ -179,8 +185,8 @@ var gBacklight_on_sec as Number = 0;
 var gBacklight_on_meters as Number = 1000;
       
 var gBrakelight_on as Boolean = false;
-var gBrakelight_on_perc as Float = 2.0f;
-var gBrakelightMode as Number = 7; // Fast flash, TODO - select this
+var gBrakelight_on_perc as Float = 1.7f;
+var gBrakelightMode as Number = 7; // Fast flash, TODO - select this in menu
 
 public enum FieldDisplay {
   FldLights = 0,

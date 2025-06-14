@@ -260,7 +260,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
 // TODO x perc -> light mode fast flash
 // TODO 2x perc -> light mode .. 
 
-       WatchUi.pushView(blightMenu, new $.GeneralMenuDelegate(self, blightMenu), WatchUi.SLIDE_UP);
+       WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
       return;
     }
 
