@@ -80,7 +80,12 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("backlight_on_meters", 1000);
        
         Storage.setValue("brakelight_on", true);
-        Storage.setValue("brakelight_on_perc", 1.7f);
+        Storage.setValue("brakelight_minimal_speed", 5.0f);        
+        Storage.setValue("brakelight_on_perc_0", 3.0f);
+        Storage.setValue("brake_light_mode_0", 7);
+        Storage.setValue("brakelight_on_perc_1", 10.0f);
+        Storage.setValue("brake_light_mode_1", 7);
+        
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -126,10 +131,6 @@ class SettledApp extends Application.AppBase {
           $.getStorageValue("other_light_mode_6", 0) as Number,
           $.getStorageValue("other_light_mode_7", -1) as Number,
         ] as Array<Number>;
-
-      $.gDisplay_field = $.getStorageValue("display_field", $.gDisplay_field) as FieldDisplay;
-      $.gShow_label = $.getStorageValue("show_label", $.gShow_label) as Boolean;
-      $.gShow_lightInfo = $.getStorageValue("show_lightInfo", $.gShow_lightInfo) as Boolean;
       $.gShow_solar = $.getStorageValue("show_solar", $.gShow_solar) as Boolean;
 
       $.gBacklight_on = $.getStorageValue("backlight_on", $.gBacklight_on) as Boolean;
@@ -140,10 +141,33 @@ class SettledApp extends Application.AppBase {
       $.gBacklight_on_meters = $.getStorageValue("backlight_on_meters", $.gBacklight_on_meters) as Number;
           
       $.gBrakelight_on = $.getStorageValue("brakelight_on", $.gBrakelight_on) as Boolean;
-      $.gBrakelight_on_perc = $.getStorageValue("brakelight_on_perc", $.gBrakelight_on_perc) as Float;
+
+      if ($.gBrakelight_on) {
+        var minimalSpeed = $.getStorageValue("brakelight_minimal_speed", 5.0f) as Float;
+        $.gBrakelight_minimal_mps = $.kmPerHourToMeterPerSecond(minimalSpeed);
+
+        
+        $.gBrakelight_on_perc_0 = $.getStorageValue("brakelight_on_perc_0", $.gBrakelight_on_perc_0) as Float;
+        $.gBrake_light_mode_0 = $.getStorageValue("brake_light_mode_0", $.gBrake_light_mode_0) as Number;
+        $.gBrakelight_on_perc_1 = $.getStorageValue("brakelight_on_perc_1", $.gBrakelight_on_perc_1) as Float;
+        $.gBrake_light_mode_1 = $.getStorageValue("brake_light_mode_1", $.gBrake_light_mode_1) as Number;
+        if ($.gBrakelight_on_perc_0 > $.gBrakelight_on_perc_1) {
+          // swap values
+          Storage.setValue("brakelight_on_perc_0", $.gBrakelight_on_perc_1);
+          Storage.setValue("brake_light_mode_0", $.gBrake_light_mode_1);
+          Storage.setValue("brakelight_on_perc_1", $.gBrakelight_on_perc_0);
+          Storage.setValue("brake_light_mode_1", $.gBrake_light_mode_0);
+
+          $.gBrakelight_on_perc_0 = $.getStorageValue("brakelight_on_perc_0", $.gBrakelight_on_perc_0) as Float;  
+          $.gBrake_light_mode_0 = $.getStorageValue("brake_light_mode_0", $.gBrake_light_mode_0) as Number;
+          $.gBrakelight_on_perc_1 = $.getStorageValue("brakelight_on_perc_1", $.gBrakelight_on_perc_1) as Float;
+          $.gBrake_light_mode_1 = $.getStorageValue("brake_light_mode_1", $.gBrake_light_mode_1) as Number;
+        }
+      }
+        
          
       System.println("User settings loaded");
-    } catch (ex) {
+    } catch (ex) {// Fast flash
       System.println(ex.getErrorMessage());
       ex.printStackTrace();
     }
@@ -185,8 +209,11 @@ var gBacklight_on_sec as Number = 0;
 var gBacklight_on_meters as Number = 1000;
       
 var gBrakelight_on as Boolean = false;
-var gBrakelight_on_perc as Float = 1.7f;
-var gBrakelightMode as Number = 7; // Fast flash, TODO - select this in menu
+var gBrakelight_minimal_mps as Float = 1.38888889f; // 5km/h
+var gBrakelight_on_perc_0 as Float = 3.0f;
+var gBrake_light_mode_0 as Number = 7; // Fast flash
+var gBrakelight_on_perc_1 as Float = 10.0f;
+var gBrake_light_mode_1 as Number = 7; // Fast flash
 
 public enum FieldDisplay {
   FldLights = 0,

@@ -253,12 +253,29 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         new WatchUi.ToggleMenuItem("Brake light", null, "brakelight_on", boolean, null)
       );
 
-      var mi = new WatchUi.MenuItem("Speed slower|0.0~100 (%)", null, "brakelight_on_perc", null);
+      var mi = new WatchUi.MenuItem("Minimal speed |0.0 (km/h)", null, "brakelight_minimal_speed", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Speed slower|0.0~100 (%)", null, "brakelight_on_perc_0", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
       brakeMenu.addItem(mi);
 
-// TODO x perc -> light mode fast flash
-// TODO 2x perc -> light mode .. 
+      mi = new WatchUi.MenuItem("Mode", null, "brake_light_mode_0", null);
+      var value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      brakeMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Speed slowest|0.0~100 (%)", null, "brakelight_on_perc_1", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      brakeMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Mode", null, "brake_light_mode_1", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      brakeMenu.addItem(mi);
+    // TODO x perc -> light mode fast flash
+    // TODO 2x perc -> light mode .. 
 
        WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
       return;
@@ -390,6 +407,32 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+    if (
+      id instanceof String &&
+      (id.equals("brake_light_mode_0") ||
+       id.equals("brake_light_mode_1"))
+    ) {
+      var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
+
+      var sp = new selectionMenuPicker("Brakelightmode", id as String);
+      for (var i = -1; i <= 63; i++) {
+        if (
+          capableModes == null ||
+          (capableModes as Lang.Array<AntPlus.LightMode>).indexOf(i as AntPlus.LightMode) > -1
+        ) {
+          var text = $.getLightModeText(i);
+          if (text.length() > 0) {
+            sp.add(text, "", i);
+          }
+        }
+      }
+
+      sp.setOnSelected(self, :onSelectedSelection, item);
+      sp.show();
+      return;
+    }
+
+
     if (id instanceof String && id.equals("display_field")) {
       var sp = new selectionMenuPicker("Display field", id as String);
       for (var i = 0; i <= 8; i++) {
@@ -520,15 +563,15 @@ function getLightModeTextShort(value as Number) as String {
     case 0:
       return "off"; // LIGHT_MODE_OFF
     case 1:
-      return "80-100"; // LIGHT_MODE_ST_81_100
+      return "100"; // LIGHT_MODE_ST_81_100
     case 2:
-      return "60-80"; //LIGHT_MODE_ST_61_80
+      return "80"; //LIGHT_MODE_ST_61_80
     case 3:
-      return "40-60"; //LIGHT_MODE_ST_41_60
+      return "60"; //LIGHT_MODE_ST_41_60
     case 4:
-      return "20-40"; //LIGHT_MODE_ST_21_40
+      return "40"; //LIGHT_MODE_ST_21_40
     case 5:
-      return "0-20"; //LIGHT_MODE_ST_0_20
+      return "20"; //LIGHT_MODE_ST_0_20
     case 6:
       return "s-flash"; //LIGHT_MODE_SLOW_FLASH
     case 7:

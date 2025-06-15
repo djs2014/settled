@@ -167,11 +167,16 @@ class SettledView extends WatchUi.DataField {
     }
 
     // Brake light, when speed drops % in 1 second (onCompute interval)
-    if ($.gBrakelight_on) {
+    if ($.gBrakelight_on && speed > $.gBrakelight_minimal_mps) {
+
       // System.println("percdiff " + $.percentageDifference(speed, mPreviousSpeed));
-      if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f && $.percentageDifference(speed, mPreviousSpeed) >= $.gBrakelight_on_perc) {
-        mTailLightMode = $.gBrakelightMode;
-        // System.println("brake ");
+      if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f) {
+        var percDiff =  $.percentageDifference(speed, mPreviousSpeed);
+        if (percDiff >=  $.gBrakelight_on_perc_1 && $.gBrake_light_mode_1 > 0) {
+          mTailLightMode = $.gBrake_light_mode_1;
+        } else if (percDiff >=  $.gBrakelight_on_perc_0 && $.gBrake_light_mode_0 > 0) {
+          mTailLightMode = $.gBrake_light_mode_0;
+        }        
       }
 
       mPreviousSpeed = speed;

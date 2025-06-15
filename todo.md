@@ -2,7 +2,15 @@ break light
 x% less than previous y seconds
 -> fast flash
 
-fix bug
+40 -> 38 == 5,1 %
+30 -> 28 == 6,89 %
+20 -> 19 == 5.1
+20 -> 18 == 10 %
+29 -> 28 == 3%
+30 -> 29 == 3%
+
+
+set defaults: 40% and brake ,,
 
 
 numinput
