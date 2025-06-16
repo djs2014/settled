@@ -261,7 +261,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
       brakeMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("Mode", null, "brake_light_mode_0", null);
+      mi = new WatchUi.MenuItem("Mode", null, "brakelight_mode_0", null);
       var value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       brakeMenu.addItem(mi);
@@ -270,14 +270,16 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
       brakeMenu.addItem(mi);
 
-      mi = new WatchUi.MenuItem("Mode", null, "brake_light_mode_1", null);
+      mi = new WatchUi.MenuItem("Mode", null, "brakelight_mode_1", null);
       value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       brakeMenu.addItem(mi);
-    // TODO x perc -> light mode fast flash
-    // TODO 2x perc -> light mode .. 
+    
+      mi = new WatchUi.MenuItem("Brake border|0~10 (px)", null, "brakelight_border", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " px");
+      brakeMenu.addItem(mi);
 
-       WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
+      WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
       return;
     }
 
@@ -409,8 +411,8 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     if (
       id instanceof String &&
-      (id.equals("brake_light_mode_0") ||
-       id.equals("brake_light_mode_1"))
+      (id.equals("brakelight_mode_0") ||
+       id.equals("brakelight_mode_1"))
     ) {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
 

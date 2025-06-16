@@ -31,14 +31,15 @@ class SettledApp extends Application.AppBase {
       //   Storage.setValue("resetDefaults", true);
       // }
 
-      var resetBL = Storage.getValue("brakelight_minimal_speed");
+      var resetBL = Storage.getValue("brakelight_border");
       if (resetBL == null) {
         Storage.setValue("brakelight_on", true);
         Storage.setValue("brakelight_minimal_speed", 5.0f);        
         Storage.setValue("brakelight_on_perc_0", 3.0f);
-        Storage.setValue("brake_light_mode_0", 4);
+        Storage.setValue("brakelight_mode_0", 4);
         Storage.setValue("brakelight_on_perc_1", 10.0f);
-        Storage.setValue("brake_light_mode_1", 7);
+        Storage.setValue("brakelight_mode_1", 7);
+        Storage.setValue("brakelight_border", 1);
       }
       
       var reset = Storage.getValue("resetDefaults");
@@ -92,10 +93,10 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_on", true);
         Storage.setValue("brakelight_minimal_speed", 5.0f);        
         Storage.setValue("brakelight_on_perc_0", 3.0f);
-        Storage.setValue("brake_light_mode_0", 4);
+        Storage.setValue("brakelight_mode_0", 4);
         Storage.setValue("brakelight_on_perc_1", 10.0f);
-        Storage.setValue("brake_light_mode_1", 7);
-        
+        Storage.setValue("brakelight_mode_1", 7);
+        Storage.setValue("brakelight_border", 3);       
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -158,20 +159,21 @@ class SettledApp extends Application.AppBase {
 
         
         $.gBrakelight_on_perc_0 = $.getStorageValue("brakelight_on_perc_0", $.gBrakelight_on_perc_0) as Float;
-        $.gBrake_light_mode_0 = $.getStorageValue("brake_light_mode_0", $.gBrake_light_mode_0) as Number;
+        $.gbrakelight_mode_0 = $.getStorageValue("brakelight_mode_0", $.gbrakelight_mode_0) as Number;
         $.gBrakelight_on_perc_1 = $.getStorageValue("brakelight_on_perc_1", $.gBrakelight_on_perc_1) as Float;
-        $.gBrake_light_mode_1 = $.getStorageValue("brake_light_mode_1", $.gBrake_light_mode_1) as Number;
+        $.gbrakelight_mode_1 = $.getStorageValue("brakelight_mode_1", $.gbrakelight_mode_1) as Number;
+        $.gBrakelight_border = $.getStorageValue("brakelight_border", $.gBrakelight_border) as Number;
         if ($.gBrakelight_on_perc_0 > $.gBrakelight_on_perc_1) {
           // swap values
           Storage.setValue("brakelight_on_perc_0", $.gBrakelight_on_perc_1);
-          Storage.setValue("brake_light_mode_0", $.gBrake_light_mode_1);
+          Storage.setValue("brakelight_mode_0", $.gbrakelight_mode_1);
           Storage.setValue("brakelight_on_perc_1", $.gBrakelight_on_perc_0);
-          Storage.setValue("brake_light_mode_1", $.gBrake_light_mode_0);
+          Storage.setValue("brakelight_mode_1", $.gbrakelight_mode_0);
 
           $.gBrakelight_on_perc_0 = $.getStorageValue("brakelight_on_perc_0", $.gBrakelight_on_perc_0) as Float;  
-          $.gBrake_light_mode_0 = $.getStorageValue("brake_light_mode_0", $.gBrake_light_mode_0) as Number;
+          $.gbrakelight_mode_0 = $.getStorageValue("brakelight_mode_0", $.gbrakelight_mode_0) as Number;
           $.gBrakelight_on_perc_1 = $.getStorageValue("brakelight_on_perc_1", $.gBrakelight_on_perc_1) as Float;
-          $.gBrake_light_mode_1 = $.getStorageValue("brake_light_mode_1", $.gBrake_light_mode_1) as Number;
+          $.gbrakelight_mode_1 = $.getStorageValue("brakelight_mode_1", $.gbrakelight_mode_1) as Number;
         }
       }
         
@@ -221,9 +223,10 @@ var gBacklight_on_meters as Number = 1000;
 var gBrakelight_on as Boolean = true;
 var gBrakelight_minimal_mps as Float = 1.38888889f; // 5km/h
 var gBrakelight_on_perc_0 as Float = 3.0f;
-var gBrake_light_mode_0 as Number = 4; // 40%
+var gbrakelight_mode_0 as Number = 4; // 40%
 var gBrakelight_on_perc_1 as Float = 10.0f;
-var gBrake_light_mode_1 as Number = 7; // Fast flash
+var gbrakelight_mode_1 as Number = 7; // Fast flash
+var gBrakelight_border as Number = 3;
 
 public enum FieldDisplay {
   FldLights = 0,

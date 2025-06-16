@@ -70,6 +70,7 @@ class SettledView extends WatchUi.DataField {
   hidden var mBackLightMeters as Number = -1;
   
   hidden var mPreviousSpeed as Float = 0.0f;
+  hidden var mBrakelightBorder as Number = 0;
 
   function initialize() {
     DataField.initialize();
@@ -168,15 +169,18 @@ class SettledView extends WatchUi.DataField {
 
     // Brake light, when speed drops % in 1 second (onCompute interval)
     // TODO check/test when speed high and brake till speed < minimal_mps -> 
+    mBrakelightBorder = 0;
     if ($.gBrakelight_on && (speed > $.gBrakelight_minimal_mps || mPreviousSpeed > $.gBrakelight_minimal_mps)) {
 
       // System.println("percdiff " + $.percentageDifference(speed, mPreviousSpeed));
       if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f) {
         var percDiff =  $.percentageDifference(speed, mPreviousSpeed);
-        if (percDiff >=  $.gBrakelight_on_perc_1 && $.gBrake_light_mode_1 > 0) {
-          mTailLightMode = $.gBrake_light_mode_1;
-        } else if (percDiff >=  $.gBrakelight_on_perc_0 && $.gBrake_light_mode_0 > 0) {
-          mTailLightMode = $.gBrake_light_mode_0;
+        if (percDiff >=  $.gBrakelight_on_perc_1 && $.gbrakelight_mode_1 > 0) {
+          mTailLightMode = $.gbrakelight_mode_1;
+          mBrakelightBorder = $.gBrakelight_border;
+        } else if (percDiff >=  $.gBrakelight_on_perc_0 && $.gbrakelight_mode_0 > 0) {
+          mTailLightMode = $.gbrakelight_mode_0;
+          mBrakelightBorder = $.gBrakelight_border;
         }        
       }
 
@@ -492,6 +496,13 @@ class SettledView extends WatchUi.DataField {
     y = height / 2;
     dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     dc.drawText(x, y, font, text, justification);
+
+    if (mBrakelightBorder > 0) {
+      dc.setPenWidth(mBrakelightBorder);
+      dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+      dc.drawRectangle(0, 0, width, height);
+      dc.setPenWidth(1);
+    }
   }
 
   function drawLightInfo(dc as Dc, width as Number, height as Number, atBottom as Boolean) as Void {
