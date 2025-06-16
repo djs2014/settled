@@ -39,7 +39,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_mode_0", 4);
         Storage.setValue("brakelight_on_perc_1", 10.0f);
         Storage.setValue("brakelight_mode_1", 7);
-        Storage.setValue("brakelight_border", 1);
+        Storage.setValue("brakelight_border", 3);
       }
       
       var reset = Storage.getValue("resetDefaults");

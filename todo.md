@@ -12,6 +12,8 @@ x% less than previous y seconds
 
 set defaults: 40% and brake ,,
 choose border color -> brake
+demo brake lights
+display text?
 
 numinput
  - fix 830 screen width, bigger squares based on width of screen
