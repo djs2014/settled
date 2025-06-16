@@ -65,12 +65,12 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi = new WatchUi.MenuItem("Alerts", null, "alerts", null);
     menu.addItem(mi);
 
-    mi = new WatchUi.MenuItem("Backlight", null, "backlight", null);
-    menu.addItem(mi);
-
     mi = new WatchUi.MenuItem("Brake light", null, "brakelight", null);
     menu.addItem(mi);
    
+    mi = new WatchUi.MenuItem("Backlight", null, "backlight", null);
+    menu.addItem(mi);
+
     mi = new WatchUi.MenuItem("Test Timer State", null, "test_TimerState", null);
     var value = getStorageValue(mi.getId() as String, 0) as Number;
     mi.setSubLabel($.getTimerStateAsString(value));

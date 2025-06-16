@@ -31,6 +31,16 @@ class SettledApp extends Application.AppBase {
       //   Storage.setValue("resetDefaults", true);
       // }
 
+      var resetBL = Storage.getValue("brakelight_minimal_speed");
+      if (resetBL == null) {
+        Storage.setValue("brakelight_on", true);
+        Storage.setValue("brakelight_minimal_speed", 5.0f);        
+        Storage.setValue("brakelight_on_perc_0", 3.0f);
+        Storage.setValue("brake_light_mode_0", 4);
+        Storage.setValue("brakelight_on_perc_1", 10.0f);
+        Storage.setValue("brake_light_mode_1", 7);
+      }
+      
       var reset = Storage.getValue("resetDefaults");
       if (reset == null || (reset as Boolean)) {
         System.println("Reset user settings");
@@ -82,7 +92,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_on", true);
         Storage.setValue("brakelight_minimal_speed", 5.0f);        
         Storage.setValue("brakelight_on_perc_0", 3.0f);
-        Storage.setValue("brake_light_mode_0", 7);
+        Storage.setValue("brake_light_mode_0", 4);
         Storage.setValue("brakelight_on_perc_1", 10.0f);
         Storage.setValue("brake_light_mode_1", 7);
         
@@ -208,10 +218,10 @@ var gBacklight_at_night as Boolean = true;
 var gBacklight_on_sec as Number = 0;
 var gBacklight_on_meters as Number = 1000;
       
-var gBrakelight_on as Boolean = false;
+var gBrakelight_on as Boolean = true;
 var gBrakelight_minimal_mps as Float = 1.38888889f; // 5km/h
 var gBrakelight_on_perc_0 as Float = 3.0f;
-var gBrake_light_mode_0 as Number = 7; // Fast flash
+var gBrake_light_mode_0 as Number = 4; // 40%
 var gBrakelight_on_perc_1 as Float = 10.0f;
 var gBrake_light_mode_1 as Number = 7; // Fast flash
 

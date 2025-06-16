@@ -248,7 +248,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
     if (id instanceof String && id.equals("brakelight")) {
       var brakeMenu = new WatchUi.Menu2({ :title => "Brake light" });
 
-      var boolean = Storage.getValue("brake light on") ? true : false;
+      var boolean = Storage.getValue("brakelight_on") ? true : false;
       brakeMenu.addItem(
         new WatchUi.ToggleMenuItem("Brake light", null, "brakelight_on", boolean, null)
       );
@@ -513,15 +513,15 @@ function getLightModeText(value as Number) as String {
     case 0:
       return "off"; // LIGHT_MODE_OFF
     case 1:
-      return "80-100%"; // LIGHT_MODE_ST_81_100
+      return "100%"; // LIGHT_MODE_ST_81_100
     case 2:
-      return "60-80%"; //LIGHT_MODE_ST_61_80
+      return "80%"; //LIGHT_MODE_ST_61_80
     case 3:
-      return "40-60%"; //LIGHT_MODE_ST_41_60
+      return "60%"; //LIGHT_MODE_ST_41_60
     case 4:
-      return "20-40%"; //LIGHT_MODE_ST_21_40
+      return "40%"; //LIGHT_MODE_ST_21_40
     case 5:
-      return "0-20%"; //LIGHT_MODE_ST_0_20
+      return "20%"; //LIGHT_MODE_ST_0_20
     case 6:
       return "slow flash"; //LIGHT_MODE_SLOW_FLASH
     case 7:
