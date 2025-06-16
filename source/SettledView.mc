@@ -167,7 +167,8 @@ class SettledView extends WatchUi.DataField {
     }
 
     // Brake light, when speed drops % in 1 second (onCompute interval)
-    if ($.gBrakelight_on && speed > $.gBrakelight_minimal_mps) {
+    // TODO check/test when speed high and brake till speed < minimal_mps -> 
+    if ($.gBrakelight_on && (speed > $.gBrakelight_minimal_mps || mPreviousSpeed > $.gBrakelight_minimal_mps)) {
 
       // System.println("percdiff " + $.percentageDifference(speed, mPreviousSpeed));
       if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f) {
