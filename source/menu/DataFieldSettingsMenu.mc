@@ -279,7 +279,34 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
 
       boolean = Storage.getValue("brakelight_demo") ? true : false;
       brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Demo", null, "brakelight_demo", boolean, null));
-      // TODO data array
+      
+      mi = new WatchUi.MenuItem("demo speed 0|0.0~100 (km/h)", null, "brakelight_data_0", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 1|0.0~100 (km/h)", null, "brakelight_data_1", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 2|0.0~100 (km/h)", null, "brakelight_data_2", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 30|0.0~100 (km/h)", null, "brakelight_data_3", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 4|0.0~100 (km/h)", null, "brakelight_data_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 5|0.0~100 (km/h)", null, "brakelight_data_5", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 6|0.0~100 (km/h)", null, "brakelight_data_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 7|0.0~100 (km/h)", null, "brakelight_data_7", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 8|0.0~100 (km/h)", null, "brakelight_data_8", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
 
       WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
       return;

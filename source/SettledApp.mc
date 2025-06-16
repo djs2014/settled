@@ -31,7 +31,7 @@ class SettledApp extends Application.AppBase {
       //   Storage.setValue("resetDefaults", true);
       // }
 
-      var resetBL = Storage.getValue("brakelight_border");
+      var resetBL = Storage.getValue("brakelight_data_0");
       if (resetBL == null) {
         Storage.setValue("brakelight_on", true);
         Storage.setValue("brakelight_minimal_speed", 5.0f);        
@@ -40,6 +40,16 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_on_perc_1", 10.0f);
         Storage.setValue("brakelight_mode_1", 7);
         Storage.setValue("brakelight_border", 3);
+        Storage.setValue("brakelight_demo", false);
+        Storage.setValue("brakelight_data_0", 28.5f);
+        Storage.setValue("brakelight_data_1", 30.1f);
+        Storage.setValue("brakelight_data_2", 28.0f);
+        Storage.setValue("brakelight_data_3", 27.0f);
+        Storage.setValue("brakelight_data_4", 23.0f);
+        Storage.setValue("brakelight_data_5", 10.0f);
+        Storage.setValue("brakelight_data_6", 4.0f); 
+        Storage.setValue("brakelight_data_7", 2.0f); 
+        Storage.setValue("brakelight_data_8", 1.0f);
       }
       
       var reset = Storage.getValue("resetDefaults");
@@ -96,7 +106,17 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_mode_0", 4);
         Storage.setValue("brakelight_on_perc_1", 10.0f);
         Storage.setValue("brakelight_mode_1", 7);
-        Storage.setValue("brakelight_border", 3);       
+        Storage.setValue("brakelight_border", 3);     
+        Storage.setValue("brakelight_demo", false);
+        Storage.setValue("brakelight_data_0", 28.5f);
+        Storage.setValue("brakelight_data_1", 30.1f);
+        Storage.setValue("brakelight_data_2", 28.0f);
+        Storage.setValue("brakelight_data_3", 27.0f);
+        Storage.setValue("brakelight_data_4", 23.0f);
+        Storage.setValue("brakelight_data_5", 10.0f);
+        Storage.setValue("brakelight_data_6", 4.0f); 
+        Storage.setValue("brakelight_data_7", 2.0f); 
+        Storage.setValue("brakelight_data_8", 1.0f);  
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -179,6 +199,19 @@ class SettledApp extends Application.AppBase {
         $.gBrakelight_demo = $.getStorageValue("brakelight_demo", $.gBrakelight_demo) as Boolean;
         if ($.gBrakelight_demo) {
           Storage.setValue("brakelight_demo", false);
+
+          $.gBrakelight_demo_data =
+            [
+              $.getStorageValue("brakelight_data_0", 28.5f) as Float,
+              $.getStorageValue("brakelight_data_1", 30.1f) as Float,
+              $.getStorageValue("brakelight_data_2", 28.0f) as Float,
+              $.getStorageValue("brakelight_data_3", 27.0f) as Float,
+              $.getStorageValue("brakelight_data_4", 23.0f) as Float,
+              $.getStorageValue("brakelight_data_5", 10.0f) as Float,
+              $.getStorageValue("brakelight_data_6", 4.0f) as Float,
+              $.getStorageValue("brakelight_data_7", 2.0f) as Float,
+              $.getStorageValue("brakelight_data_8", 1.0f) as Float,
+            ] as Array<Float>;          
         }
       }
         
