@@ -163,6 +163,7 @@ class SettledApp extends Application.AppBase {
         $.gBrakelight_on_perc_1 = $.getStorageValue("brakelight_on_perc_1", $.gBrakelight_on_perc_1) as Float;
         $.gbrakelight_mode_1 = $.getStorageValue("brakelight_mode_1", $.gbrakelight_mode_1) as Number;
         $.gBrakelight_border = $.getStorageValue("brakelight_border", $.gBrakelight_border) as Number;
+
         if ($.gBrakelight_on_perc_0 > $.gBrakelight_on_perc_1) {
           // swap values
           Storage.setValue("brakelight_on_perc_0", $.gBrakelight_on_perc_1);
@@ -174,6 +175,10 @@ class SettledApp extends Application.AppBase {
           $.gbrakelight_mode_0 = $.getStorageValue("brakelight_mode_0", $.gbrakelight_mode_0) as Number;
           $.gBrakelight_on_perc_1 = $.getStorageValue("brakelight_on_perc_1", $.gBrakelight_on_perc_1) as Float;
           $.gbrakelight_mode_1 = $.getStorageValue("brakelight_mode_1", $.gbrakelight_mode_1) as Number;
+        }
+        $.gBrakelight_demo = $.getStorageValue("brakelight_demo", $.gBrakelight_demo) as Boolean;
+        if ($.gBrakelight_demo) {
+          Storage.setValue("brakelight_demo", false);
         }
       }
         
@@ -227,6 +232,9 @@ var gbrakelight_mode_0 as Number = 4; // 40%
 var gBrakelight_on_perc_1 as Float = 10.0f;
 var gbrakelight_mode_1 as Number = 7; // Fast flash
 var gBrakelight_border as Number = 3;
+
+var gBrakelight_demo as Boolean = false;
+var gBrakelight_demo_data as Array<Float> = [28.5f, 30.1f, 28.0f, 27.0, 23.0, 10.0, 4.0, 2.0, 1.0];
 
 public enum FieldDisplay {
   FldLights = 0,

@@ -249,9 +249,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       var brakeMenu = new WatchUi.Menu2({ :title => "Brake light" });
 
       var boolean = Storage.getValue("brakelight_on") ? true : false;
-      brakeMenu.addItem(
-        new WatchUi.ToggleMenuItem("Brake light", null, "brakelight_on", boolean, null)
-      );
+      brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Brake light", null, "brakelight_on", boolean, null));
 
       var mi = new WatchUi.MenuItem("Minimal speed |0.0 (km/h)", null, "brakelight_minimal_speed", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
@@ -278,6 +276,10 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi = new WatchUi.MenuItem("Brake border|0~10 (px)", null, "brakelight_border", null);
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " px");
       brakeMenu.addItem(mi);
+
+      boolean = Storage.getValue("brakelight_demo") ? true : false;
+      brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Demo", null, "brakelight_demo", boolean, null));
+      // TODO data array
 
       WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
       return;

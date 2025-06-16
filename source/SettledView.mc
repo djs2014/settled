@@ -71,6 +71,9 @@ class SettledView extends WatchUi.DataField {
   
   hidden var mPreviousSpeed as Float = 0.0f;
   hidden var mBrakelightBorder as Number = 0;
+  // -1 do nothing, 0 start demo until end of data array
+  hidden var mBrakelightDemoCounter as Number = -1;
+  hidden var mHasTaillight as Boolean = false;
 
   function initialize() {
     DataField.initialize();
@@ -167,6 +170,20 @@ class SettledView extends WatchUi.DataField {
       }
     }
 
+    if ($.gBrakelight_on && $.gBrakelight_demo && mHasTaillight) {
+      mBrakelightDemoCounter = mBrakelightDemoCounter + 1;
+      if (mBrakelightDemoCounter < $.gBrakelight_demo_data.size()) {
+        // There is test data
+        speed = $.kmPerHourToMeterPerSecond($.gBrakelight_demo_data[mBrakelightDemoCounter]);
+      } else {
+        // Stop demo
+        $.gBrakelight_demo = false;
+        mBrakelightDemoCounter = -1;      
+      }      
+    } else {
+      mBrakelightDemoCounter = -1;      
+    }
+
     // Brake light, when speed drops % in 1 second (onCompute interval)
     // TODO check/test when speed high and brake till speed < minimal_mps -> 
     mBrakelightBorder = 0;
@@ -231,6 +248,10 @@ class SettledView extends WatchUi.DataField {
       case FldSolarIntensity:
         mValueA = mSolarIntensity;
         break;
+    }
+    
+    if ($.gBrakelight_demo && mBrakelightDemoCounter > -1) {
+      mValueA = speed;
     }
 
     if (mPhoneConnected || !$.gAlert_no_phone) {
@@ -454,6 +475,10 @@ class SettledView extends WatchUi.DataField {
         break;
     }
 
+    if ($.gBrakelight_demo && mBrakelightDemoCounter > -1) {
+       text = mValueA.format("%0.1f") + "km/h";
+    }
+
     // No subtext when active
     if (!mActivityPauzed) {
       subtext = "";
@@ -645,6 +670,7 @@ class SettledView extends WatchUi.DataField {
   }
 
   function updateBikeLights() as Void {
+    mHasTaillight = false;
     if (mBikeLights == null || mBikeLights.size() == 0) {
       return;
     }
@@ -660,6 +686,7 @@ class SettledView extends WatchUi.DataField {
             break;
           case AntPlus.LIGHT_TYPE_TAILLIGHT:
             lightMode = mTailLightMode;
+            mHasTaillight = true;
             break;
           default:
           case AntPlus.LIGHT_TYPE_OTHER:
