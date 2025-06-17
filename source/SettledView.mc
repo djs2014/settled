@@ -262,7 +262,7 @@ class SettledView extends WatchUi.DataField {
     }
     
     if ($.gBrakelight_demo && mBrakelightDemoIdx > -1) {
-      mValueA = speed;
+      mValueA = $.mpsToKmPerHour(speed);
       mValueB = 0;
     }
 
