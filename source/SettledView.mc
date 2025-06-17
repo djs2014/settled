@@ -72,7 +72,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mPreviousSpeed as Float = 0.0f;
   hidden var mBrakelightBorder as Number = 0;
   // -1 do nothing, 0 start demo until end of data array
-  hidden var mBrakelightDemoCounter as Number = -1;
+  hidden var mBrakelightDemoIdx as Number = -1;
+  hidden var mBrakelightDemoCountdown as Number = 0;
   hidden var mHasTaillight as Boolean = false;
 
   function initialize() {
@@ -170,18 +171,28 @@ class SettledView extends WatchUi.DataField {
       }
     }
 
-    if ($.gBrakelight_on && $.gBrakelight_demo && mHasTaillight) {
-      mBrakelightDemoCounter = mBrakelightDemoCounter + 1;
-      if (mBrakelightDemoCounter < $.gBrakelight_demo_data.size()) {
+    if ($.gBrakelight_on && $.gBrakelight_demo && mHasTaillight) {      
+      // For demo assume activity on
+      mTailLightMode = $.gTail_light_mode[Activity.TIMER_STATE_ON] as Number;
+      if (mBrakelightDemoCountdown <= 0) {
+        mBrakelightDemoCountdown = 3; // 3 sec per demo speed
+        mBrakelightDemoIdx = mBrakelightDemoIdx + 1;
+      } else {
+        mBrakelightDemoCountdown = mBrakelightDemoCountdown -1;
+      }
+
+      if (mBrakelightDemoIdx < $.gBrakelight_demo_data.size()) {
         // There is test data
-        speed = $.kmPerHourToMeterPerSecond($.gBrakelight_demo_data[mBrakelightDemoCounter]);
+        speed = $.kmPerHourToMeterPerSecond($.gBrakelight_demo_data[mBrakelightDemoIdx]);
       } else {
         // Stop demo
         $.gBrakelight_demo = false;
-        mBrakelightDemoCounter = -1;      
+        mBrakelightDemoIdx = -1;      
+        mBrakelightDemoCountdown = 0;   
       }      
     } else {
-      mBrakelightDemoCounter = -1;      
+      mBrakelightDemoIdx = -1;   
+      mBrakelightDemoCountdown = 0;   
     }
 
     // Brake light, when speed drops % in 1 second (onCompute interval)
@@ -250,8 +261,9 @@ class SettledView extends WatchUi.DataField {
         break;
     }
     
-    if ($.gBrakelight_demo && mBrakelightDemoCounter > -1) {
+    if ($.gBrakelight_demo && mBrakelightDemoIdx > -1) {
       mValueA = speed;
+      mValueB = 0;
     }
 
     if (mPhoneConnected || !$.gAlert_no_phone) {
@@ -442,51 +454,54 @@ class SettledView extends WatchUi.DataField {
 
     var text = "";
     var subtext = "";
-    switch ($.gDisplay_field) {
-      case FldLights:
-        drawLightInfo(dc, width, height, false);
-        break;
-      case FldDerailleurFIndex:
-      case FldDerailleurRIndex:
-      case FldDerailleurFSize:
-      case FldDerailleurRSize:
-        text = mValueA.format("%d");
-        break;
-      case FldDerailleurFRIndex:
-        text = mValueA.format("%d") + "|" + mValueB.format("%d");
-        break;
-      case FldDerailleurFRSize:
-        text = mValueA.format("%d") + "|" + mValueB.format("%d");
-        break;
-      case FldClock:
-        var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
-        text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
-        //fi.decimals = today.sec.format("%02d");
-        subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day.format("%02d"), today.month]);
-        break;
-      case FldSolarIntensity:
-        if (mValueA < 0) {
-          text = "--";
-        } else {
-          text = mValueA.format("%d") + "%";
-        }
-        // Already displayed
-        $.gShow_solar = false;
-        break;
-    }
 
-    if ($.gBrakelight_demo && mBrakelightDemoCounter > -1) {
+    if ($.gBrakelight_demo && mBrakelightDemoIdx > -1) {
+      // Demo km/h to show brake light
        text = mValueA.format("%0.1f") + "km/h";
-    }
-
-    // No subtext when active
-    if (!mActivityPauzed) {
-      subtext = "";
-    }
-    if ($.gShow_solar && mSolarIntensity > -1) {
-      subtext = mSolarIntensity.format("%d") + "% solar intensity";
-      if (mActivityPauzed) {
+       subtext = "demo";
+    } else {
+      switch ($.gDisplay_field) {
+        case FldLights:
+          drawLightInfo(dc, width, height, false);
+          break;
+        case FldDerailleurFIndex:
+        case FldDerailleurRIndex:
+        case FldDerailleurFSize:
+        case FldDerailleurRSize:
+          text = mValueA.format("%d");
+          break;
+        case FldDerailleurFRIndex:
+          text = mValueA.format("%d") + "|" + mValueB.format("%d");
+          break;
+        case FldDerailleurFRSize:
+          text = mValueA.format("%d") + "|" + mValueB.format("%d");
+          break;
+        case FldClock:
+          var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+          text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
+          //fi.decimals = today.sec.format("%02d");
+          subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day.format("%02d"), today.month]);
+          break;
+        case FldSolarIntensity:
+          if (mValueA < 0) {
+            text = "--";
+          } else {
+            text = mValueA.format("%d") + "%";
+          }
+          // Already displayed
+          $.gShow_solar = false;
+          break;
+      }
+      
+      // No subtext when active
+      if (!mActivityPauzed) {
         subtext = "";
+      }
+      if ($.gShow_solar && mSolarIntensity > -1) {
+        subtext = mSolarIntensity.format("%d") + "% solar intensity";
+        if (mActivityPauzed) {
+          subtext = "";
+        }
       }
     }
 

@@ -12,7 +12,7 @@ x% less than previous y seconds
 
 set defaults: 40% and brake ,,
 choose border color -> brake
-demo brake lights
+demo brake lights - 2 sec per km/h item
 display text?
 
 numinput
