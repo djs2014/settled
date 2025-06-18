@@ -116,7 +116,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_data_5", 10.0f);
         Storage.setValue("brakelight_data_6", 4.0f); 
         Storage.setValue("brakelight_data_7", 2.0f); 
-        Storage.setValue("brakelight_data_8", 1.0f);  
+        Storage.setValue("brakelight_data_8", 1.0f); 
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -162,6 +162,10 @@ class SettledApp extends Application.AppBase {
           $.getStorageValue("other_light_mode_6", 0) as Number,
           $.getStorageValue("other_light_mode_7", -1) as Number,
         ] as Array<Number>;
+
+      $.gDisplay_field = $.getStorageValue("display_field", $.gDisplay_field) as FieldDisplay;
+      $.gShow_label = $.getStorageValue("show_label", $.gShow_label) as Boolean;
+      $.gShow_lightInfo = $.getStorageValue("show_lightInfo", $.gShow_lightInfo) as Boolean;
       $.gShow_solar = $.getStorageValue("show_solar", $.gShow_solar) as Boolean;
 
       $.gBacklight_on = $.getStorageValue("backlight_on", $.gBacklight_on) as Boolean;
@@ -217,7 +221,7 @@ class SettledApp extends Application.AppBase {
         
          
       System.println("User settings loaded");
-    } catch (ex) {// Fast flash
+    } catch (ex) {
       System.println(ex.getErrorMessage());
       ex.printStackTrace();
     }
