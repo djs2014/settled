@@ -1,3 +1,8 @@
+count brakes #x y/n
+display speed option -> enabled when demo active
+display brake count
+set default to 4%
+
 break light
 x% less than previous y seconds
 -> fast flash
