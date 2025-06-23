@@ -277,6 +277,9 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " px");
       brakeMenu.addItem(mi);
 
+      boolean = Storage.getValue("brakelight_showCounter") ? true : false;
+      brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Show # brakes", null, "brakelight_showCounter", boolean, null));
+
       boolean = Storage.getValue("brakelight_demo") ? true : false;
       brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Demo", null, "brakelight_demo", boolean, null));
       

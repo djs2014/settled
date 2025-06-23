@@ -68,13 +68,14 @@ class SettledView extends WatchUi.DataField {
   hidden var mCurrentLocation as CurrentLocation;
   hidden var mBackLightSeconds as Number = -1;
   hidden var mBackLightMeters as Number = -1;
-  
+
   hidden var mPreviousSpeed as Float = 0.0f;
   hidden var mBrakelightBorder as Number = 0;
   // -1 do nothing, 0 start demo until end of data array
   hidden var mBrakelightDemoIdx as Number = -1;
   hidden var mBrakelightDemoCountdown as Number = 0;
   hidden var mHasTaillight as Boolean = false;
+  hidden var mBrakelightCounter as Number = 0;
 
   function initialize() {
     DataField.initialize();
@@ -97,7 +98,7 @@ class SettledView extends WatchUi.DataField {
 
   function onLocationChanged(degrees as Array<Double>) as Void {
     mLat = degrees[0];
-    mLon = degrees[1];    
+    mLon = degrees[1];
   }
 
   function onLayout(dc as Dc) as Void {
@@ -171,14 +172,14 @@ class SettledView extends WatchUi.DataField {
       }
     }
 
-    if ($.gBrakelight_on && $.gBrakelight_demo && mHasTaillight) {      
+    if ($.gBrakelight_on && $.gBrakelight_demo && mHasTaillight) {
       // For demo assume activity on
       mTailLightMode = $.gTail_light_mode[Activity.TIMER_STATE_ON] as Number;
       if (mBrakelightDemoCountdown <= 0) {
         mBrakelightDemoCountdown = 3; // 3 sec per demo speed
         mBrakelightDemoIdx = mBrakelightDemoIdx + 1;
       } else {
-        mBrakelightDemoCountdown = mBrakelightDemoCountdown -1;
+        mBrakelightDemoCountdown = mBrakelightDemoCountdown - 1;
       }
 
       if (mBrakelightDemoIdx < $.gBrakelight_demo_data.size()) {
@@ -187,29 +188,30 @@ class SettledView extends WatchUi.DataField {
       } else {
         // Stop demo
         $.gBrakelight_demo = false;
-        mBrakelightDemoIdx = -1;      
-        mBrakelightDemoCountdown = 0;   
-      }      
+        mBrakelightDemoIdx = -1;
+        mBrakelightDemoCountdown = 0;
+      }
     } else {
-      mBrakelightDemoIdx = -1;   
-      mBrakelightDemoCountdown = 0;   
+      mBrakelightDemoIdx = -1;
+      mBrakelightDemoCountdown = 0;
     }
 
     // Brake light, when speed drops % in 1 second (onCompute interval)
-    // TODO check/test when speed high and brake till speed < minimal_mps -> 
+    // TODO check/test when speed high and brake till speed < minimal_mps ->
     mBrakelightBorder = 0;
     if ($.gBrakelight_on && (speed > $.gBrakelight_minimal_mps || mPreviousSpeed > $.gBrakelight_minimal_mps)) {
-
       // System.println("percdiff " + $.percentageDifference(speed, mPreviousSpeed));
       if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f) {
-        var percDiff =  $.percentageDifference(speed, mPreviousSpeed);
-        if (percDiff >=  $.gBrakelight_on_perc_1 && $.gbrakelight_mode_1 > 0) {
+        var percDiff = $.percentageDifference(speed, mPreviousSpeed);
+        if (percDiff >= $.gBrakelight_on_perc_1 && $.gbrakelight_mode_1 > 0) {
           mTailLightMode = $.gbrakelight_mode_1;
           mBrakelightBorder = $.gBrakelight_border;
-        } else if (percDiff >=  $.gBrakelight_on_perc_0 && $.gbrakelight_mode_0 > 0) {
+          mBrakelightCounter = mBrakelightCounter + 1;
+        } else if (percDiff >= $.gBrakelight_on_perc_0 && $.gbrakelight_mode_0 > 0) {
           mTailLightMode = $.gbrakelight_mode_0;
           mBrakelightBorder = $.gBrakelight_border;
-        }        
+          mBrakelightCounter = mBrakelightCounter + 1;
+        }
       }
 
       mPreviousSpeed = speed;
@@ -260,7 +262,7 @@ class SettledView extends WatchUi.DataField {
         mValueA = mSolarIntensity;
         break;
     }
-    
+
     if ($.gBrakelight_demo && mBrakelightDemoIdx > -1) {
       mValueA = $.mpsToKmPerHour(speed);
       mValueB = 0;
@@ -323,26 +325,30 @@ class SettledView extends WatchUi.DataField {
     Attention.playTone(Attention.TONE_KEY);
   }
   function alertBacklight() as Void {
-     if (!$.gBacklight_on_alerts) { return; }
-     turnBacklightOn();  
+    if (!$.gBacklight_on_alerts) {
+      return;
+    }
+    turnBacklightOn();
   }
   function processBackLightTrigger(elapsedDistance as Number) as Void {
-    if (!$.gBacklight_on) { return; }
+    if (!$.gBacklight_on) {
+      return;
+    }
     if ($.gBacklight_at_night) {
       if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
         return;
       }
     }
-    
+
     if ($.gBacklight_on_sec == 0) {
       mBackLightSeconds = -1;
     } else {
       if (mBackLightSeconds < 0) {
         mBackLightSeconds = $.gBacklight_on_sec;
       } else if (mBackLightSeconds == 0) {
-        turnBacklightOn();        
-      } 
-      mBackLightSeconds = mBackLightSeconds - 1;            
+        turnBacklightOn();
+      }
+      mBackLightSeconds = mBackLightSeconds - 1;
     }
 
     if ($.gBacklight_on_meters == 0) {
@@ -350,8 +356,8 @@ class SettledView extends WatchUi.DataField {
     } else {
       if (mBackLightMeters < elapsedDistance) {
         mBackLightMeters = elapsedDistance + $.gBacklight_on_meters;
-        turnBacklightOn();                
-      }             
+        turnBacklightOn();
+      }
     }
     // System.println([mBackLightSeconds, mBackLightMeters, elapsedDistance, $.gBacklight_on_meters]);
   }
@@ -365,15 +371,13 @@ class SettledView extends WatchUi.DataField {
     }
   }
 
-  function isNightTime() as Boolean {
-    try {
-    
+  // function isNightTime() as Boolean {
+  //   try {
 
-
-    } catch(ex) {
-      return false;
-    }
-  }
+  //   } catch(ex) {
+  //     return false;
+  //   }
+  // }
 
   // When paused, countdown then optional change mode
   function processPauseCounter(maxSecondsPaused as Number, counter as Number) as Number {
@@ -457,8 +461,8 @@ class SettledView extends WatchUi.DataField {
 
     if ($.gBrakelight_demo && mBrakelightDemoIdx > -1) {
       // Demo km/h to show brake light
-       text = mValueA.format("%0.1f") + "km/h";
-       subtext = "demo";
+      text = mValueA.format("%0.1f") + "km/h";
+      subtext = "demo";
     } else {
       switch ($.gDisplay_field) {
         case FldLights:
@@ -492,7 +496,7 @@ class SettledView extends WatchUi.DataField {
           $.gShow_solar = false;
           break;
       }
-      
+
       // No subtext when active
       if (!mActivityPauzed) {
         subtext = "";
@@ -542,6 +546,12 @@ class SettledView extends WatchUi.DataField {
       dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
       dc.drawRectangle(0, 0, width, height);
       dc.setPenWidth(1);
+    }
+
+    if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
+      dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
+      text = "#" + mBrakelightCounter.format("%d");
+      dc.drawText(width, 1, Graphics.FONT_SMALL, text, Graphics.TEXT_JUSTIFY_RIGHT);
     }
   }
 
@@ -797,5 +807,5 @@ function getBikeLightTypeText(value as Number) as String {
       return "Other";
     default:
       return "--";
-  } 
+  }
 }
