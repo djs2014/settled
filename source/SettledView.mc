@@ -88,6 +88,8 @@ class SettledView extends WatchUi.DataField {
     mLightNetworkListener = new BikeLightNetworkListener(self);
     mLightNetwork = new AntPlus.LightNetwork(mLightNetworkListener);
 
+    mRadarTargetCount = 0;
+    mRadarTargetDetected = false;
     if ($.gRadar_enabled) {
       mBikeRadarListener = new ABikeRadarListener(self);
       mBikeRadar = new AntPlus.BikeRadar(mBikeRadarListener);
@@ -776,7 +778,7 @@ class SettledView extends WatchUi.DataField {
       ($.gRadar_activity_on_only && mTimerState != Activity.TIMER_STATE_ON)
     ) {
       mRadarTargetCount = 0;
-      mRadarTargetDetected = false;
+      // mRadarTargetDetected = false; will be turned off in compute method
       return;
     }
 
@@ -785,7 +787,7 @@ class SettledView extends WatchUi.DataField {
       mRadarTargetCount = amountDetected;
       if ($.gRadar_first_detected_only) {
         // No more signaling
-        mRadarTargetDetected = false;
+        // mRadarTargetDetected = false; will be turned off in compute method
         return;
       } else {
         mRadarTargetDetected = true;
