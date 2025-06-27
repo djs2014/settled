@@ -1,3 +1,4 @@
+optional - when rader detect a car -> set light mode to fast flash
 count brakes #x y/n
 display speed option -> enabled when demo active
 display brake count

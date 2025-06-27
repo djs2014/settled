@@ -75,7 +75,7 @@ class SettledView extends WatchUi.DataField {
   hidden var mBrakelightDemoIdx as Number = -1;
   hidden var mBrakelightDemoCountdown as Number = 0;
   hidden var mHasTaillight as Boolean = false;
-  hidden var mBrakelightCounter as Number = 0;
+  // hidden var mBrakelightCounter as Number = 0;
 
   function initialize() {
     DataField.initialize();
@@ -206,11 +206,11 @@ class SettledView extends WatchUi.DataField {
         if (percDiff >= $.gBrakelight_on_perc_1 && $.gbrakelight_mode_1 > 0) {
           mTailLightMode = $.gbrakelight_mode_1;
           mBrakelightBorder = $.gBrakelight_border;
-          mBrakelightCounter = mBrakelightCounter + 1;
+          // mBrakelightCounter = mBrakelightCounter + 1; doesnt work this way
         } else if (percDiff >= $.gBrakelight_on_perc_0 && $.gbrakelight_mode_0 > 0) {
           mTailLightMode = $.gbrakelight_mode_0;
           mBrakelightBorder = $.gBrakelight_border;
-          mBrakelightCounter = mBrakelightCounter + 1;
+          // mBrakelightCounter = mBrakelightCounter + 1;
         }
       }
 
@@ -548,11 +548,11 @@ class SettledView extends WatchUi.DataField {
       dc.setPenWidth(1);
     }
 
-    if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
-      dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
-      text = "#" + mBrakelightCounter.format("%d");
-      dc.drawText(width, 1, Graphics.FONT_SMALL, text, Graphics.TEXT_JUSTIFY_RIGHT);
-    }
+    // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
+    //   dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
+    //   text = "#" + mBrakelightCounter.format("%d");
+    //   dc.drawText(width, 1, Graphics.FONT_SMALL, text, Graphics.TEXT_JUSTIFY_RIGHT);
+    // }
   }
 
   function drawLightInfo(dc as Dc, width as Number, height as Number, atBottom as Boolean) as Void {
@@ -745,6 +745,11 @@ class SettledView extends WatchUi.DataField {
       return;
     }
     mEvent = "light: " + $.getBikeLightTypeText(light.type) + "\n mode: " + (mode as Number).format("%d");
+  }
+
+  function updateRadar(detected as Lang.Number) as Void {
+    // TODO 
+    // detected changed -> set light mode 
   }
 
   // const lightType = ["Head", "?", "Tail", "Signal", "SignalLeft", "SignalRight", "Other"];
