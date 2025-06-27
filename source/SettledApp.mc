@@ -51,12 +51,13 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_data_7", 2.0f); 
         Storage.setValue("brakelight_data_8", 1.0f);
       }
-      var resetRadar = Storage.getValue("radar_enabled");
+      var resetRadar = Storage.getValue("radar_hit_mode_1");
       if (resetRadar == null) {
         Storage.setValue("radar_enabled", true); 
         Storage.setValue("radar_first_detected_only", true); 
         Storage.setValue("radar_activity_on_only", true); 
-        Storage.setValue("radar_hit_mode", 7); 
+        Storage.setValue("radar_hit_mode_1", 7); 
+        Storage.setValue("radar_hit_mode_2", 7); 
       }
 
       var reset = Storage.getValue("resetDefaults");
@@ -128,7 +129,8 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_enabled", true); 
         Storage.setValue("radar_first_detected_only", true); 
         Storage.setValue("radar_activity_on_only", true); 
-        Storage.setValue("radar_hit_mode", 7); 
+        Storage.setValue("radar_hit_mode_1", 7); 
+        Storage.setValue("radar_hit_mode_2", 7); 
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -236,7 +238,8 @@ class SettledApp extends Application.AppBase {
       if ($.gRadar_enabled ) {
         $.gRadar_first_detected_only = $.getStorageValue("radar_first_detected_only", $.gRadar_first_detected_only) as Boolean;
         $.gRadar_activity_on_only = $.getStorageValue("radar_activity_on_only", $.gRadar_activity_on_only) as Boolean;
-        $.gRadar_hit_mode = $.getStorageValue("radar_hit_mode", $.gRadar_hit_mode) as Number;
+        $.gRadar_hit_mode_1 = $.getStorageValue("radar_hit_mode_1", $.gRadar_hit_mode_1) as Number;
+        $.gRadar_hit_mode_2 = $.getStorageValue("radar_hit_mode_2", $.gRadar_hit_mode_2) as Number;
       }
          
       System.println("User settings loaded");
@@ -295,7 +298,8 @@ var gBrakelight_demo_data as Array<Float> = [28.5f, 30.1f, 28.0f, 27.0, 23.0, 10
 var gRadar_enabled as Boolean = true;
 var gRadar_first_detected_only as Boolean = true;
 var gRadar_activity_on_only as Boolean = true;
-var gRadar_hit_mode as Number = 7; // Fast flash
+var gRadar_hit_mode_1 as Number = 7; // Fast flash
+var gRadar_hit_mode_2 as Number = 7; // Fast flash
 
 public enum FieldDisplay {
   FldLights = 0,

@@ -325,8 +325,13 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       boolean = Storage.getValue("radar_activity_on_only") ? true : false;
       radarMenu.addItem(new WatchUi.ToggleMenuItem("Only when activity", null, "radar_activity_on_only", boolean, null));
       
-      var mi = new WatchUi.MenuItem("When detected", null, "radar_hit_mode", null);
+      var mi = new WatchUi.MenuItem("When approaching", null, "radar_hit_mode_1", null);
       var value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      radarMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When fast approaching", null, "radar_hit_mode_2", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getLightModeText(value));
       radarMenu.addItem(mi);
 
@@ -487,7 +492,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
  if (
       id instanceof String &&
-      id.equals("radar_hit_mode") )
+      (id.equals("radar_hit_mode_1") || id.equals("radar_hit_mode_2") ))
      {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
 

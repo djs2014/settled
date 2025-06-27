@@ -55,6 +55,7 @@ class SettledView extends WatchUi.DataField {
   hidden var mBikeRadar as BikeRadar;
   hidden var mRadarTargetCount as Number = 0;
   hidden var mRadarTargetDetected as Boolean = false;
+  const RADARTARGETS = 8;
 
   hidden var mLightType as Number = 0;
   hidden var mLightMode as Number = 0;
@@ -232,9 +233,10 @@ class SettledView extends WatchUi.DataField {
     }
 
     // Always check per second just in case, event onUpdateRadar happens anytime
+    // TODO when :gRadar_hit_mode_2
     if (mRadarTargetDetected) {
-      if ($.gRadar_hit_mode > -1) {
-        mTailLightMode = $.gRadar_hit_mode;
+      if ($.gRadar_hit_mode_1 > -1) {
+        mTailLightMode = $.gRadar_hit_mode_1;
       }
       mRadarTargetDetected = false;
     }
@@ -770,7 +772,18 @@ class SettledView extends WatchUi.DataField {
   }
 
   function onUpdateRadar(data as Lang.Array<AntPlus.RadarTarget>) as Void {
-    var amountDetected = data.size();
+    var amountDetected = 0;
+    var amountFastApproaching = 0;
+    // Calcuate the amount with TreatLevel > 0
+    for (var i = 0; i < RADARTARGETS; i++) {
+      if (data[i].threat > 0) {
+        amountDetected = amountDetected + 1;
+        if (data[i].threat > 1) {
+          amountFastApproaching = amountFastApproaching + 1;
+        }
+      }
+    }
+    // TODO THREAT_SIDE_RIGHT / THREAT_SIDE_LEFT
     // Reset if not enabled, nothing detected or when not active
     if (
       !$.gRadar_enabled ||
@@ -787,7 +800,7 @@ class SettledView extends WatchUi.DataField {
       mRadarTargetCount = amountDetected;
       if ($.gRadar_first_detected_only) {
         // No more signaling
-        // mRadarTargetDetected = false; will be turned off in compute method
+        // mRadarTargetDetected = false;
         return;
       } else {
         mRadarTargetDetected = true;
@@ -798,8 +811,11 @@ class SettledView extends WatchUi.DataField {
       mRadarTargetDetected = true;
     }
     // Update light
-    if ($.gRadar_hit_mode > -1) {
-      mTailLightMode = $.gRadar_hit_mode;
+    if ($.gRadar_hit_mode_1 > -1) {
+      mTailLightMode = $.gRadar_hit_mode_1;
+      if (amountFastApproaching > 1 && $.gRadar_hit_mode_2 > -1) {
+        mTailLightMode = $.gRadar_hit_mode_2;
+      }
       mBikeLights = mLightNetwork.getBikeLights();
       updateBikeLights();
     }
