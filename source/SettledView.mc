@@ -51,6 +51,11 @@ class SettledView extends WatchUi.DataField {
   hidden var mLightNetworkListener as BikeLightNetworkListener;
   hidden var mLightNetwork as AntPlus.LightNetwork;
 
+  hidden var mBikeRadarListener as ABikeRadarListener?;
+  hidden var mBikeRadar as BikeRadar;
+  hidden var mRadarTargetCount as Number = 0;
+  hidden var mRadarTargetDetected as Boolean = false;
+
   hidden var mLightType as Number = 0;
   hidden var mLightMode as Number = 0;
   hidden var mEvent as String = "";
@@ -82,6 +87,13 @@ class SettledView extends WatchUi.DataField {
 
     mLightNetworkListener = new BikeLightNetworkListener(self);
     mLightNetwork = new AntPlus.LightNetwork(mLightNetworkListener);
+
+    if ($.gRadar_enabled) {
+      mBikeRadarListener = new ABikeRadarListener(self);
+      mBikeRadar = new AntPlus.BikeRadar(mBikeRadarListener);
+    } else {
+      mBikeRadar = new AntPlus.BikeRadar(null);
+    }
 
     mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
     mAlertNoPhone = false;
@@ -215,6 +227,14 @@ class SettledView extends WatchUi.DataField {
       }
 
       mPreviousSpeed = speed;
+    }
+
+    // Always check per second just in case, event onUpdateRadar happens anytime
+    if (mRadarTargetDetected) {
+      if ($.gRadar_hit_mode > -1) {
+        mTailLightMode = $.gRadar_hit_mode;
+      }
+      mRadarTargetDetected = false;
     }
 
     mBikeLights = mLightNetwork.getBikeLights();
@@ -739,7 +759,7 @@ class SettledView extends WatchUi.DataField {
     $.storeCapableLightModes(mBikeLights);
   }
 
-  function updateLight(light as AntPlus.BikeLight, mode as AntPlus.LightMode) as Void {
+  function onUpdateLight(light as AntPlus.BikeLight, mode as AntPlus.LightMode) as Void {
     if (light == null) {
       mEvent = "";
       return;
@@ -747,13 +767,43 @@ class SettledView extends WatchUi.DataField {
     mEvent = "light: " + $.getBikeLightTypeText(light.type) + "\n mode: " + (mode as Number).format("%d");
   }
 
-  function updateRadar(detected as Lang.Number) as Void {
-    // TODO 
-    // detected changed -> set light mode 
+  function onUpdateRadar(data as Lang.Array<AntPlus.RadarTarget>) as Void {
+    var amountDetected = data.size();
+    // Reset if not enabled, nothing detected or when not active
+    if (
+      !$.gRadar_enabled ||
+      amountDetected == 0 ||
+      ($.gRadar_activity_on_only && mTimerState != Activity.TIMER_STATE_ON)
+    ) {
+      mRadarTargetCount = 0;
+      mRadarTargetDetected = false;
+      return;
+    }
+
+    if (amountDetected <= mRadarTargetCount) {
+      // Less or same # detected
+      mRadarTargetCount = amountDetected;
+      if ($.gRadar_first_detected_only) {
+        // No more signaling
+        mRadarTargetDetected = false;
+        return;
+      } else {
+        mRadarTargetDetected = true;
+      }
+    } else {
+      // We got more detected
+      mRadarTargetCount = amountDetected;
+      mRadarTargetDetected = true;
+    }
+    // Update light
+    if ($.gRadar_hit_mode > -1) {
+      mTailLightMode = $.gRadar_hit_mode;
+      mBikeLights = mLightNetwork.getBikeLights();
+      updateBikeLights();
+    }
   }
 
   // const lightType = ["Head", "?", "Tail", "Signal", "SignalLeft", "SignalRight", "Other"];
-
   function getActivityText(value as Activity.TimerState) as String {
     switch (value) {
       case Activity.TIMER_STATE_OFF:

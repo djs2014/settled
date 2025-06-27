@@ -68,6 +68,9 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi = new WatchUi.MenuItem("Brake light", null, "brakelight", null);
     menu.addItem(mi);
    
+    mi = new WatchUi.MenuItem("Radar", null, "radar", null);
+    menu.addItem(mi);
+
     mi = new WatchUi.MenuItem("Backlight", null, "backlight", null);
     menu.addItem(mi);
 

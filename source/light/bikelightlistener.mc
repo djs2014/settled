@@ -26,8 +26,8 @@ class BikeLightNetworkListener extends AntPlus.LightNetworkListener {
     if (_eventHandler.stillAlive()) {
         var obj = _eventHandler.get();
       if (obj != null) {
-        (obj as SettledView).updateLight(light, light.mode);
-      }     
+        (obj as SettledView).onUpdateLight(light, light.mode);
+      }
     }
   }
 }

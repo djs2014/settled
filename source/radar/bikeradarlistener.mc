@@ -19,16 +19,9 @@ class ABikeRadarListener extends AntPlus.BikeRadarListener {
     if (_eventHandler.stillAlive()) {
       var obj = _eventHandler.get();
       if (obj != null) {
-        (obj as SettledView).updateRadar(data.size());
+        (obj as SettledView).onUpdateRadar(data);
       }     
     }
   }
 }
 
-Detect only first arrival
-? when distance lower and same amount of cars -> do not trigger again?
-? if no cars -> no trigger -> reset trigger
-? 1 car -> trigger
-? 2 car -> trigger
-? 1 car -> no trigger
-if stays same count -> no trigger

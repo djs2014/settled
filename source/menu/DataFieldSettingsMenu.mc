@@ -277,9 +277,6 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " px");
       brakeMenu.addItem(mi);
 
-      // boolean = Storage.getValue("brakelight_showCounter") ? true : false;
-      // brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Show # brakes", null, "brakelight_showCounter", boolean, null));
-
       boolean = Storage.getValue("brakelight_demo") ? true : false;
       brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Demo", null, "brakelight_demo", boolean, null));
       
@@ -312,6 +309,28 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       brakeMenu.addItem(mi);
 
       WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
+
+    if (id instanceof String && id.equals("radar")) {
+      var radarMenu = new WatchUi.Menu2({ :title => "Radar" });
+
+      var boolean = Storage.getValue("radar_enabled") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Enabled", null, "radar_enabled", boolean, null));
+
+      boolean = Storage.getValue("radar_first_detected_only") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Only first detected", null, "radar_first_detected_only", boolean, null));
+      
+      boolean = Storage.getValue("radar_activity_on_only") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Only when activity", null, "radar_activity_on_only", boolean, null));
+      
+      var mi = new WatchUi.MenuItem("When detected", null, "radar_hit_mode", null);
+      var value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      radarMenu.addItem(mi);
+
+      WatchUi.pushView(radarMenu, new $.GeneralMenuDelegate(self, radarMenu), WatchUi.SLIDE_UP);
       return;
     }
 
@@ -449,6 +468,30 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
 
       var sp = new selectionMenuPicker("Brakelightmode", id as String);
+      for (var i = -1; i <= 63; i++) {
+        if (
+          capableModes == null ||
+          (capableModes as Lang.Array<AntPlus.LightMode>).indexOf(i as AntPlus.LightMode) > -1
+        ) {
+          var text = $.getLightModeText(i);
+          if (text.length() > 0) {
+            sp.add(text, "", i);
+          }
+        }
+      }
+
+      sp.setOnSelected(self, :onSelectedSelection, item);
+      sp.show();
+      return;
+    }
+
+ if (
+      id instanceof String &&
+      id.equals("radar_hit_mode") )
+     {
+      var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
+
+      var sp = new selectionMenuPicker("Radarhitmode", id as String);
       for (var i = -1; i <= 63; i++) {
         if (
           capableModes == null ||

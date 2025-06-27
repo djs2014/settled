@@ -51,7 +51,14 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_data_7", 2.0f); 
         Storage.setValue("brakelight_data_8", 1.0f);
       }
-      
+      var resetRadar = Storage.getValue("radar_enabled");
+      if (resetRadar == null) {
+        Storage.setValue("radar_enabled", true); 
+        Storage.setValue("radar_first_detected_only", true); 
+        Storage.setValue("radar_activity_on_only", true); 
+        Storage.setValue("radar_hit_mode", 7); 
+      }
+
       var reset = Storage.getValue("resetDefaults");
       if (reset == null || (reset as Boolean)) {
         System.println("Reset user settings");
@@ -117,6 +124,11 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("brakelight_data_6", 4.0f); 
         Storage.setValue("brakelight_data_7", 2.0f); 
         Storage.setValue("brakelight_data_8", 1.0f); 
+
+        Storage.setValue("radar_enabled", true); 
+        Storage.setValue("radar_first_detected_only", true); 
+        Storage.setValue("radar_activity_on_only", true); 
+        Storage.setValue("radar_hit_mode", 7); 
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -220,6 +232,12 @@ class SettledApp extends Application.AppBase {
         }
       }
         
+      $.gRadar_enabled = $.getStorageValue("radar_enabled", $.gRadar_enabled) as Boolean;
+      if ($.gRadar_enabled ) {
+        $.gRadar_first_detected_only = $.getStorageValue("radar_first_detected_only", $.gRadar_first_detected_only) as Boolean;
+        $.gRadar_activity_on_only = $.getStorageValue("radar_activity_on_only", $.gRadar_activity_on_only) as Boolean;
+        $.gRadar_hit_mode = $.getStorageValue("radar_hit_mode", $.gRadar_hit_mode) as Number;
+      }
          
       System.println("User settings loaded");
     } catch (ex) {
@@ -273,7 +291,11 @@ var gBrakelight_border as Number = 3;
 
 var gBrakelight_demo as Boolean = false;
 var gBrakelight_demo_data as Array<Float> = [28.5f, 30.1f, 28.0f, 27.0, 23.0, 10.0, 4.0, 2.0, 1.0];
-// var gBrakelight_showCounter as Boolean = false;
+
+var gRadar_enabled as Boolean = true;
+var gRadar_first_detected_only as Boolean = true;
+var gRadar_activity_on_only as Boolean = true;
+var gRadar_hit_mode as Number = 7; // Fast flash
 
 public enum FieldDisplay {
   FldLights = 0,
