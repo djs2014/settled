@@ -35,7 +35,7 @@ class SettledApp extends Application.AppBase {
       if (resetBL == null) {
         Storage.setValue("brakelight_on", true);
         Storage.setValue("brakelight_minimal_speed", 5.0f);        
-        Storage.setValue("brakelight_on_perc_0", 3.0f);
+        Storage.setValue("brakelight_on_perc_0", 3.5f);
         Storage.setValue("brakelight_mode_0", 4);
         Storage.setValue("brakelight_on_perc_1", 10.0f);
         Storage.setValue("brakelight_mode_1", 7);
@@ -56,6 +56,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_enabled", true); 
         Storage.setValue("radar_first_detected_only", true); 
         Storage.setValue("radar_activity_on_only", true); 
+        Storage.setValue("radar_show_threat_side", true); 
         Storage.setValue("radar_hit_mode_1", 7); 
         Storage.setValue("radar_hit_mode_2", 7); 
       }
@@ -80,7 +81,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("tail_light_mode_0", 0);
         Storage.setValue("tail_light_mode_1", 0);
         Storage.setValue("tail_light_mode_2", 6);
-        Storage.setValue("tail_light_mode_3", 7);
+        Storage.setValue("tail_light_mode_3", 0); // activity on -> off
         Storage.setValue("tail_light_mode_4", 15);
         Storage.setValue("tail_light_mode_5", 0);
         Storage.setValue("tail_light_mode_6", 0);
@@ -129,6 +130,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_enabled", true); 
         Storage.setValue("radar_first_detected_only", true); 
         Storage.setValue("radar_activity_on_only", true); 
+        Storage.setValue("radar_show_threat_side", true); 
         Storage.setValue("radar_hit_mode_1", 7); 
         Storage.setValue("radar_hit_mode_2", 7); 
       }
@@ -159,7 +161,7 @@ class SettledApp extends Application.AppBase {
           $.getStorageValue("tail_light_mode_0", 0) as Number,
           $.getStorageValue("tail_light_mode_1", 0) as Number,
           $.getStorageValue("tail_light_mode_2", 6) as Number,
-          $.getStorageValue("tail_light_mode_3", 7) as Number,
+          $.getStorageValue("tail_light_mode_3", 0) as Number,
           $.getStorageValue("tail_light_mode_4", 15) as Number,
           $.getStorageValue("tail_light_mode_5", 0) as Number,
           $.getStorageValue("tail_light_mode_6", 0) as Number,
@@ -238,6 +240,7 @@ class SettledApp extends Application.AppBase {
       if ($.gRadar_enabled ) {
         $.gRadar_first_detected_only = $.getStorageValue("radar_first_detected_only", $.gRadar_first_detected_only) as Boolean;
         $.gRadar_activity_on_only = $.getStorageValue("radar_activity_on_only", $.gRadar_activity_on_only) as Boolean;
+        $.gRadar_show_threat_side = $.getStorageValue("radar_show_threat_side", $.gRadar_show_threat_side) as Boolean;
         $.gRadar_hit_mode_1 = $.getStorageValue("radar_hit_mode_1", $.gRadar_hit_mode_1) as Number;
         $.gRadar_hit_mode_2 = $.getStorageValue("radar_hit_mode_2", $.gRadar_hit_mode_2) as Number;
       }
@@ -264,7 +267,7 @@ var gAlert_Stopped_Speed_mps as Float = 0.8f;
 
 // [ timer off, timer stopped, timer paused, timer on, seconds, paused for seconds, drop to solar intensity%, lightmode]
 var gHead_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0, 0, 2];
-var gTail_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0, 0, -1];
+var gTail_light_mode as Array<Number> = [0, 0, 6, 0, 15, 0, 0, -1];
 var gOther_light_mode as Array<Number> = [0, 0, 6, 7, 15, 0, 0, -1];
 var gtest_TimerState as Number = -1;
 
@@ -300,6 +303,7 @@ var gRadar_first_detected_only as Boolean = true;
 var gRadar_activity_on_only as Boolean = true;
 var gRadar_hit_mode_1 as Number = 7; // Fast flash
 var gRadar_hit_mode_2 as Number = 7; // Fast flash
+var gRadar_show_threat_side as Boolean = true;
 
 public enum FieldDisplay {
   FldLights = 0,

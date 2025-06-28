@@ -335,6 +335,10 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       mi.setSubLabel($.getLightModeText(value));
       radarMenu.addItem(mi);
 
+      boolean = Storage.getValue("radar_show_threat_side") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Show threat side", null, "radar_show_threat_side", boolean, null));
+      
+
       WatchUi.pushView(radarMenu, new $.GeneralMenuDelegate(self, radarMenu), WatchUi.SLIDE_UP);
       return;
     }

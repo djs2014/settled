@@ -56,6 +56,10 @@ class SettledView extends WatchUi.DataField {
   hidden var mRadarTargetCount as Number = 0;
   hidden var mRadarTargetDetected as Boolean = false;
   const RADARTARGETS = 8;
+  hidden var mRadarTargetAmountLeft as Number = 0;
+  hidden var mRadarTargetAmountRight as Number = 0;
+  hidden var mPtsLeft as Lang.Array<Graphics.Point2D> = [];
+  hidden var mPtsRight as Lang.Array<Graphics.Point2D> = [];
 
   hidden var mLightType as Number = 0;
   hidden var mLightMode as Number = 0;
@@ -91,6 +95,8 @@ class SettledView extends WatchUi.DataField {
 
     mRadarTargetCount = 0;
     mRadarTargetDetected = false;
+    mRadarTargetAmountLeft = 0;
+    mRadarTargetAmountRight = 0;
     if ($.gRadar_enabled) {
       mBikeRadarListener = new ABikeRadarListener(self);
       mBikeRadar = new AntPlus.BikeRadar(mBikeRadarListener);
@@ -119,6 +125,25 @@ class SettledView extends WatchUi.DataField {
   function onLayout(dc as Dc) as Void {
     // fix for leaving menu, draw complete screen, large field
     dc.clearClip();
+
+    if ($.gRadar_enabled && $.gRadar_show_threat_side) {
+      var w = dc.getWidth();
+      var h = dc.getHeight();
+      var y2 = (h / 2).toNumber();
+      var x2 = (w / 2).toNumber();
+      mPtsLeft = [
+        [1, y2],
+        [x2, 1],
+        [x2, h - 1],
+        [1, y2],
+      ];
+      mPtsRight = [
+        [w - 1, y2],
+        [x2, 1],
+        [x2, h - 1],
+        [w - 1, y2],
+      ];
+    }
   }
 
   function compute(info as Activity.Info) as Void {
@@ -465,6 +490,19 @@ class SettledView extends WatchUi.DataField {
       return;
     }
 
+    if ($.gRadar_show_threat_side) {
+      if (mRadarTargetAmountLeft > 0) {
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon(mPtsLeft);
+        dc.setColor(fgColor, bgColor);
+      }
+      if (mRadarTargetAmountRight > 0) {
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon(mPtsRight);
+        dc.setColor(fgColor, bgColor);
+      }
+    }
+
     if ($.gShow_label && mActivityPauzed) {
       var label = $.getDisplayText($.gDisplay_field);
       if (label.length() > 0) {
@@ -772,8 +810,17 @@ class SettledView extends WatchUi.DataField {
   }
 
   function onUpdateRadar(data as Lang.Array<AntPlus.RadarTarget>) as Void {
+    mRadarTargetAmountRight = 0;
+    mRadarTargetAmountLeft = 0;
+
+    if (!$.gRadar_enabled || ($.gRadar_activity_on_only && mTimerState != Activity.TIMER_STATE_ON)) {
+      mRadarTargetCount = 0;
+      return;
+    }
+
     var amountDetected = 0;
     var amountFastApproaching = 0;
+
     // Calcuate the amount with TreatLevel > 0
     for (var i = 0; i < RADARTARGETS; i++) {
       if (data[i].threat > 0) {
@@ -781,15 +828,16 @@ class SettledView extends WatchUi.DataField {
         if (data[i].threat > 1) {
           amountFastApproaching = amountFastApproaching + 1;
         }
+        if (data[i].threatSide == 1) {
+          mRadarTargetAmountRight = mRadarTargetAmountRight + 1;
+        } else if (data[i].threatSide == 2) {
+          mRadarTargetAmountLeft = mRadarTargetAmountLeft + 1;
+        }
       }
     }
     // TODO THREAT_SIDE_RIGHT / THREAT_SIDE_LEFT
     // Reset if not enabled, nothing detected or when not active
-    if (
-      !$.gRadar_enabled ||
-      amountDetected == 0 ||
-      ($.gRadar_activity_on_only && mTimerState != Activity.TIMER_STATE_ON)
-    ) {
+    if (amountDetected == 0) {
       mRadarTargetCount = 0;
       // mRadarTargetDetected = false; will be turned off in compute method
       return;
