@@ -42,7 +42,7 @@ class SettledView extends WatchUi.DataField {
     Graphics.FONT_TINY,
     Graphics.FONT_SYSTEM_SMALL,
     Graphics.FONT_SYSTEM_MEDIUM,
-    // Graphics.FONT_SYSTEM_LARGE,
+    Graphics.FONT_SYSTEM_LARGE,
   ];
 
   // ?? hidden var mBikeLights as Lang.Array<AntPlus.BikeLight>?;
@@ -50,6 +50,16 @@ class SettledView extends WatchUi.DataField {
   hidden var mLightNetworkState as Number = 0;
   hidden var mLightNetworkListener as BikeLightNetworkListener;
   hidden var mLightNetwork as AntPlus.LightNetwork;
+
+  hidden var mBikeRadarListener as ABikeRadarListener?;
+  hidden var mBikeRadar as BikeRadar;
+  hidden var mRadarTargetCount as Number = 0;
+  hidden var mRadarTargetDetected as Boolean = false;
+  const RADARTARGETS = 8;
+  hidden var mRadarTargetAmountLeft as Number = 0;
+  hidden var mRadarTargetAmountRight as Number = 0;
+  hidden var mPtsLeft as Lang.Array<Graphics.Point2D> = [];
+  hidden var mPtsRight as Lang.Array<Graphics.Point2D> = [];
 
   hidden var mLightType as Number = 0;
   hidden var mLightMode as Number = 0;
@@ -63,11 +73,36 @@ class SettledView extends WatchUi.DataField {
   hidden var mUseFontsNumbers as Boolean = true;
   hidden var mActivityNeverHappened as Boolean = true;
 
+  hidden var mLat as Double = 0d;
+  hidden var mLon as Double = 0d;
+  hidden var mCurrentLocation as CurrentLocation;
+  hidden var mBackLightSeconds as Number = -1;
+  hidden var mBackLightMeters as Number = -1;
+
+  hidden var mPreviousSpeed as Float = 0.0f;
+  hidden var mBrakelightBorder as Number = 0;
+  // -1 do nothing, 0 start demo until end of data array
+  hidden var mBrakelightDemoIdx as Number = -1;
+  hidden var mBrakelightDemoCountdown as Number = 0;
+  hidden var mHasTaillight as Boolean = false;
+  // hidden var mBrakelightCounter as Number = 0;
+
   function initialize() {
     DataField.initialize();
 
     mLightNetworkListener = new BikeLightNetworkListener(self);
     mLightNetwork = new AntPlus.LightNetwork(mLightNetworkListener);
+
+    mRadarTargetCount = 0;
+    mRadarTargetDetected = false;
+    mRadarTargetAmountLeft = 0;
+    mRadarTargetAmountRight = 0;
+    if ($.gRadar_enabled) {
+      mBikeRadarListener = new ABikeRadarListener(self);
+      mBikeRadar = new AntPlus.BikeRadar(mBikeRadarListener);
+    } else {
+      mBikeRadar = new AntPlus.BikeRadar(null);
+    }
 
     mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
     mAlertNoPhone = false;
@@ -77,14 +112,43 @@ class SettledView extends WatchUi.DataField {
     if ($.hasRequiredCIQVersion("5.0.0")) {
       mUseFontsNumbers = true;
     }
+
+    mCurrentLocation = new CurrentLocation();
+    mCurrentLocation.setOnLocationChanged(self, :onLocationChanged);
+  }
+
+  function onLocationChanged(degrees as Array<Double>) as Void {
+    mLat = degrees[0];
+    mLon = degrees[1];
   }
 
   function onLayout(dc as Dc) as Void {
     // fix for leaving menu, draw complete screen, large field
     dc.clearClip();
+
+    if ($.gRadar_enabled && $.gRadar_show_threat_side) {
+      var w = dc.getWidth();
+      var h = dc.getHeight();
+      var y2 = (h / 2).toNumber();
+      var x2 = (w / 2).toNumber();
+      mPtsLeft = [
+        [1, y2],
+        [x2, 1],
+        [x2, h - 1],
+        [1, y2],
+      ];
+      mPtsRight = [
+        [w - 1, y2],
+        [x2, 1],
+        [x2, h - 1],
+        [w - 1, y2],
+      ];
+    }
   }
 
   function compute(info as Activity.Info) as Void {
+    var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
+
     mTimerState = $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as Activity.TimerState;
     if ($.gtest_TimerState > -1) {
       mTimerState = $.gtest_TimerState as Activity.TimerState;
@@ -148,6 +212,60 @@ class SettledView extends WatchUi.DataField {
       }
     }
 
+    if ($.gBrakelight_on && $.gBrakelight_demo && mHasTaillight) {
+      // For demo assume activity on
+      mTailLightMode = $.gTail_light_mode[Activity.TIMER_STATE_ON] as Number;
+      if (mBrakelightDemoCountdown <= 0) {
+        mBrakelightDemoCountdown = 3; // 3 sec per demo speed
+        mBrakelightDemoIdx = mBrakelightDemoIdx + 1;
+      } else {
+        mBrakelightDemoCountdown = mBrakelightDemoCountdown - 1;
+      }
+
+      if (mBrakelightDemoIdx < $.gBrakelight_demo_data.size()) {
+        // There is test data
+        speed = $.kmPerHourToMeterPerSecond($.gBrakelight_demo_data[mBrakelightDemoIdx]);
+      } else {
+        // Stop demo
+        $.gBrakelight_demo = false;
+        mBrakelightDemoIdx = -1;
+        mBrakelightDemoCountdown = 0;
+      }
+    } else {
+      mBrakelightDemoIdx = -1;
+      mBrakelightDemoCountdown = 0;
+    }
+
+    // Brake light, when speed drops % in 1 second (onCompute interval)
+    // TODO check/test when speed high and brake till speed < minimal_mps ->
+    mBrakelightBorder = 0;
+    if ($.gBrakelight_on && (speed > $.gBrakelight_minimal_mps || mPreviousSpeed > $.gBrakelight_minimal_mps)) {
+      // System.println("percdiff " + $.percentageDifference(speed, mPreviousSpeed));
+      if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f) {
+        var percDiff = $.percentageDifference(speed, mPreviousSpeed);
+        if (percDiff >= $.gBrakelight_on_perc_1 && $.gbrakelight_mode_1 > 0) {
+          mTailLightMode = $.gbrakelight_mode_1;
+          mBrakelightBorder = $.gBrakelight_border;
+          // mBrakelightCounter = mBrakelightCounter + 1; doesnt work this way
+        } else if (percDiff >= $.gBrakelight_on_perc_0 && $.gbrakelight_mode_0 > 0) {
+          mTailLightMode = $.gbrakelight_mode_0;
+          mBrakelightBorder = $.gBrakelight_border;
+          // mBrakelightCounter = mBrakelightCounter + 1;
+        }
+      }
+
+      mPreviousSpeed = speed;
+    }
+
+    // Always check per second just in case, event onUpdateRadar happens anytime
+    // TODO when :gRadar_hit_mode_2
+    if (mRadarTargetDetected) {
+      if ($.gRadar_hit_mode_1 > -1) {
+        mTailLightMode = $.gRadar_hit_mode_1;
+      }
+      mRadarTargetDetected = false;
+    }
+
     mBikeLights = mLightNetwork.getBikeLights();
     updateBikeLights();
 
@@ -194,6 +312,11 @@ class SettledView extends WatchUi.DataField {
         break;
     }
 
+    if ($.gBrakelight_demo && mBrakelightDemoIdx > -1) {
+      mValueA = $.mpsToKmPerHour(speed);
+      mValueB = 0;
+    }
+
     if (mPhoneConnected || !$.gAlert_no_phone) {
       mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
       mAlertNoPhone = false;
@@ -213,13 +336,18 @@ class SettledView extends WatchUi.DataField {
       ($.gAlert_no_phone_Beep_Moving > 0 || $.gAlert_no_phone_Beep_Stopped > 0)
     ) {
       // Signal alert -> screen, beep
-      var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
+      alertBacklight();
+      //var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
       if (speed <= $.gAlert_Stopped_Speed_mps) {
         playAlertWhenStopped();
       } else {
         playAlertWhenMoving();
       }
     }
+
+    mCurrentLocation.onCompute(info);
+    var elapsedDistance = $.getActivityValue(info, :elapsedDistance, 0.0f) as Float;
+    processBackLightTrigger(elapsedDistance.toNumber());
   }
 
   function playAlertWhenStopped() as Void {
@@ -245,6 +373,60 @@ class SettledView extends WatchUi.DataField {
     }
     Attention.playTone(Attention.TONE_KEY);
   }
+  function alertBacklight() as Void {
+    if (!$.gBacklight_on_alerts) {
+      return;
+    }
+    turnBacklightOn();
+  }
+  function processBackLightTrigger(elapsedDistance as Number) as Void {
+    if (!$.gBacklight_on) {
+      return;
+    }
+    if ($.gBacklight_at_night) {
+      if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
+        return;
+      }
+    }
+
+    if ($.gBacklight_on_sec == 0) {
+      mBackLightSeconds = -1;
+    } else {
+      if (mBackLightSeconds < 0) {
+        mBackLightSeconds = $.gBacklight_on_sec;
+      } else if (mBackLightSeconds == 0) {
+        turnBacklightOn();
+      }
+      mBackLightSeconds = mBackLightSeconds - 1;
+    }
+
+    if ($.gBacklight_on_meters == 0) {
+      mBackLightMeters = -1;
+    } else {
+      if (mBackLightMeters < elapsedDistance) {
+        mBackLightMeters = elapsedDistance + $.gBacklight_on_meters;
+        turnBacklightOn();
+      }
+    }
+    // System.println([mBackLightSeconds, mBackLightMeters, elapsedDistance, $.gBacklight_on_meters]);
+  }
+
+  function turnBacklightOn() as Void {
+    try {
+      Attention.backlight(true);
+    } catch (ex) {
+      System.println(ex.getErrorMessage());
+      ex.printStackTrace();
+    }
+  }
+
+  // function isNightTime() as Boolean {
+  //   try {
+
+  //   } catch(ex) {
+  //     return false;
+  //   }
+  // }
 
   // When paused, countdown then optional change mode
   function processPauseCounter(maxSecondsPaused as Number, counter as Number) as Number {
@@ -308,6 +490,19 @@ class SettledView extends WatchUi.DataField {
       return;
     }
 
+    if ($.gRadar_show_threat_side) {
+      if (mRadarTargetAmountLeft > 0) {
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon(mPtsLeft);
+        dc.setColor(fgColor, bgColor);
+      }
+      if (mRadarTargetAmountRight > 0) {
+        dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+        dc.fillPolygon(mPtsRight);
+        dc.setColor(fgColor, bgColor);
+      }
+    }
+
     if ($.gShow_label && mActivityPauzed) {
       var label = $.getDisplayText($.gDisplay_field);
       if (label.length() > 0) {
@@ -325,47 +520,54 @@ class SettledView extends WatchUi.DataField {
 
     var text = "";
     var subtext = "";
-    switch ($.gDisplay_field) {
-      case FldLights:
-        drawLightInfo(dc, width, height, false);
-        break;
-      case FldDerailleurFIndex:
-      case FldDerailleurRIndex:
-      case FldDerailleurFSize:
-      case FldDerailleurRSize:
-        text = mValueA.format("%d");
-        break;
-      case FldDerailleurFRIndex:
-        text = mValueA.format("%d") + "|" + mValueB.format("%d");
-        break;
-      case FldDerailleurFRSize:
-        text = mValueA.format("%d") + "|" + mValueB.format("%d");
-        break;
-      case FldClock:
-        var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
-        text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
-        //fi.decimals = today.sec.format("%02d");
-        subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day.format("%02d"), today.month]);
-        break;
-      case FldSolarIntensity:
-        if (mValueA < 0) {
-          text = "--";
-        } else {
-          text = mValueA.format("%d") + "%";
-        }
-        // Already displayed
-        $.gShow_solar = false;
-        break;
-    }
 
-    // No subtext when active
-    if (!mActivityPauzed) {
-      subtext = "";
-    }
-    if ($.gShow_solar && mSolarIntensity > -1) {
-      subtext = mSolarIntensity.format("%d") + "% solar intensity";
-      if (mActivityPauzed) {
+    if ($.gBrakelight_demo && mBrakelightDemoIdx > -1) {
+      // Demo km/h to show brake light
+      text = mValueA.format("%0.1f") + "km/h";
+      subtext = "demo";
+    } else {
+      switch ($.gDisplay_field) {
+        case FldLights:
+          drawLightInfo(dc, width, height, false);
+          break;
+        case FldDerailleurFIndex:
+        case FldDerailleurRIndex:
+        case FldDerailleurFSize:
+        case FldDerailleurRSize:
+          text = mValueA.format("%d");
+          break;
+        case FldDerailleurFRIndex:
+          text = mValueA.format("%d") + "|" + mValueB.format("%d");
+          break;
+        case FldDerailleurFRSize:
+          text = mValueA.format("%d") + "|" + mValueB.format("%d");
+          break;
+        case FldClock:
+          var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
+          text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
+          //fi.decimals = today.sec.format("%02d");
+          subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day.format("%02d"), today.month]);
+          break;
+        case FldSolarIntensity:
+          if (mValueA < 0) {
+            text = "--";
+          } else {
+            text = mValueA.format("%d") + "%";
+          }
+          // Already displayed
+          $.gShow_solar = false;
+          break;
+      }
+
+      // No subtext when active
+      if (!mActivityPauzed) {
         subtext = "";
+      }
+      if ($.gShow_solar && mSolarIntensity > -1) {
+        subtext = mSolarIntensity.format("%d") + "% solar intensity";
+        if (mActivityPauzed) {
+          subtext = "";
+        }
       }
     }
 
@@ -400,6 +602,19 @@ class SettledView extends WatchUi.DataField {
     y = height / 2;
     dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     dc.drawText(x, y, font, text, justification);
+
+    if (mBrakelightBorder > 0) {
+      dc.setPenWidth(mBrakelightBorder);
+      dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+      dc.drawRectangle(0, 0, width, height);
+      dc.setPenWidth(1);
+    }
+
+    // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
+    //   dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
+    //   text = "#" + mBrakelightCounter.format("%d");
+    //   dc.drawText(width, 1, Graphics.FONT_SMALL, text, Graphics.TEXT_JUSTIFY_RIGHT);
+    // }
   }
 
   function drawLightInfo(dc as Dc, width as Number, height as Number, atBottom as Boolean) as Void {
@@ -542,6 +757,7 @@ class SettledView extends WatchUi.DataField {
   }
 
   function updateBikeLights() as Void {
+    mHasTaillight = false;
     if (mBikeLights == null || mBikeLights.size() == 0) {
       return;
     }
@@ -557,6 +773,7 @@ class SettledView extends WatchUi.DataField {
             break;
           case AntPlus.LIGHT_TYPE_TAILLIGHT:
             lightMode = mTailLightMode;
+            mHasTaillight = true;
             break;
           default:
           case AntPlus.LIGHT_TYPE_OTHER:
@@ -584,7 +801,7 @@ class SettledView extends WatchUi.DataField {
     $.storeCapableLightModes(mBikeLights);
   }
 
-  function updateLight(light as AntPlus.BikeLight, mode as AntPlus.LightMode) as Void {
+  function onUpdateLight(light as AntPlus.BikeLight, mode as AntPlus.LightMode) as Void {
     if (light == null) {
       mEvent = "";
       return;
@@ -592,8 +809,67 @@ class SettledView extends WatchUi.DataField {
     mEvent = "light: " + $.getBikeLightTypeText(light.type) + "\n mode: " + (mode as Number).format("%d");
   }
 
-  // const lightType = ["Head", "?", "Tail", "Signal", "SignalLeft", "SignalRight", "Other"];
+  function onUpdateRadar(data as Lang.Array<AntPlus.RadarTarget>) as Void {
+    mRadarTargetAmountRight = 0;
+    mRadarTargetAmountLeft = 0;
 
+    if (!$.gRadar_enabled || ($.gRadar_activity_on_only && mTimerState != Activity.TIMER_STATE_ON)) {
+      mRadarTargetCount = 0;
+      return;
+    }
+
+    var amountDetected = 0;
+    var amountFastApproaching = 0;
+
+    // Calcuate the amount with TreatLevel > 0
+    for (var i = 0; i < RADARTARGETS; i++) {
+      if (data[i].threat > 0) {
+        amountDetected = amountDetected + 1;
+        if (data[i].threat > 1) {
+          amountFastApproaching = amountFastApproaching + 1;
+        }
+        if (data[i].threatSide == 1) {
+          mRadarTargetAmountRight = mRadarTargetAmountRight + 1;
+        } else if (data[i].threatSide == 2) {
+          mRadarTargetAmountLeft = mRadarTargetAmountLeft + 1;
+        }
+      }
+    }
+    // TODO THREAT_SIDE_RIGHT / THREAT_SIDE_LEFT
+    // Reset if not enabled, nothing detected or when not active
+    if (amountDetected == 0) {
+      mRadarTargetCount = 0;
+      // mRadarTargetDetected = false; will be turned off in compute method
+      return;
+    }
+
+    if (amountDetected <= mRadarTargetCount) {
+      // Less or same # detected
+      mRadarTargetCount = amountDetected;
+      if ($.gRadar_first_detected_only) {
+        // No more signaling
+        // mRadarTargetDetected = false;
+        return;
+      } else {
+        mRadarTargetDetected = true;
+      }
+    } else {
+      // We got more detected
+      mRadarTargetCount = amountDetected;
+      mRadarTargetDetected = true;
+    }
+    // Update light
+    if ($.gRadar_hit_mode_1 > -1) {
+      mTailLightMode = $.gRadar_hit_mode_1;
+      if (amountFastApproaching > 1 && $.gRadar_hit_mode_2 > -1) {
+        mTailLightMode = $.gRadar_hit_mode_2;
+      }
+      mBikeLights = mLightNetwork.getBikeLights();
+      updateBikeLights();
+    }
+  }
+
+  // const lightType = ["Head", "?", "Tail", "Signal", "SignalLeft", "SignalRight", "Other"];
   function getActivityText(value as Activity.TimerState) as String {
     switch (value) {
       case Activity.TIMER_STATE_OFF:

@@ -52,6 +52,25 @@ function percentageOf(value as Numeric?, max as Numeric?) as Numeric {
   return value / (max / 100.0);
 }
 
+function percentageDifference(valueA as Numeric?, valueB as Numeric?) as Numeric {
+  if (valueA == null || valueB == null ) {
+    return 0.0f;
+  }
+
+  var sum = valueA + valueB;
+  if (sum == 0) {
+    return 0.0f;
+  }
+
+  var diff = valueA - valueB;
+  if (diff < 0) {
+    diff = diff * -1.0f;
+  }
+
+  // Perc difference
+  return (diff / (sum / 2.0f)) * 100.0f;
+}
+
 function drawPercentageLine(
   dc as Dc,
   x as Number,
@@ -167,75 +186,6 @@ function getFormatForMeterAndKm(distanceInMeters as Float) as String {
   } else {
     return "%0d";
   }
-}
-
-function deg2rad(deg as Numeric) as Double or Float {
-  return deg * (Math.PI / 180);
-}
-
-function rad2deg(rad as Numeric) as Double or Float {
-  var deg = (rad * 180) / Math.PI;
-  if (deg < 0) {
-    deg += 360.0;
-  }
-  return deg as Double or Float;
-}
-
-// bearing in degrees
-function getCompassDirection(bearing as Numeric) as String {
-  var direction = "";
-  // Round and convert to number (1.00000 -> 1)
-  switch (Math.round(bearing / 22.5).toNumber()) {
-    case 1:
-      direction = "NNE";
-      break;
-    case 2:
-      direction = "NE";
-      break;
-    case 3:
-      direction = "ENE";
-      break;
-    case 4:
-      direction = "E";
-      break;
-    case 5:
-      direction = "ESE";
-      break;
-    case 6:
-      direction = "SE";
-      break;
-    case 7:
-      direction = "SSE";
-      break;
-    case 8:
-      direction = "S";
-      break;
-    case 9:
-      direction = "SSW";
-      break;
-    case 10:
-      direction = "SW";
-      break;
-    case 11:
-      direction = "WSW";
-      break;
-    case 12:
-      direction = "W";
-      break;
-    case 13:
-      direction = "WNW";
-      break;
-    case 14:
-      direction = "NW";
-      break;
-    case 15:
-      direction = "NNW";
-      break;
-    default:
-      direction = "N";
-  }
-
-  return direction;
 }
 
 // pascal -> mbar (hPa)
@@ -494,4 +444,12 @@ function hasRequiredCIQVersion(requiredVersion as String) as Boolean {
   } else {
     return false;
   }  
+}
+
+function getShortTimeString(moment as Time.Moment?) as String {
+  if (moment != null && moment instanceof Time.Moment) {
+    var date = Gregorian.info(moment, Time.FORMAT_SHORT);
+    return date.hour.format("%02d") + ":" + date.min.format("%02d");
+  }
+  return "";
 }

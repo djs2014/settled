@@ -216,6 +216,133 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+   if (id instanceof String && id.equals("backlight")) {
+      var blightMenu = new WatchUi.Menu2({ :title => "Backlight" });
+
+      var boolean = Storage.getValue("backlight_on") ? true : false;
+      blightMenu.addItem(
+        new WatchUi.ToggleMenuItem("Backlight", null, "backlight_on", boolean, null)
+      );
+      boolean = Storage.getValue("backlight_on_alerts") ? true : false;
+      blightMenu.addItem(
+        new WatchUi.ToggleMenuItem("On for alerts", null, "backlight_on_alerts", boolean, null)
+      );
+      
+      boolean = Storage.getValue("backlight_at_night") ? true : false;
+      blightMenu.addItem(
+        new WatchUi.ToggleMenuItem("Only at night", null, "backlight_at_night", boolean, null)
+      );
+
+      var mi = new WatchUi.MenuItem("Trigger after| (seconds)", null, "backlight_on_sec", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " seconds");
+      blightMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Trigger after| (meters)", null, "backlight_on_meters", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " meters");
+      blightMenu.addItem(mi);     
+
+      WatchUi.pushView(blightMenu, new $.GeneralMenuDelegate(self, blightMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
+    if (id instanceof String && id.equals("brakelight")) {
+      var brakeMenu = new WatchUi.Menu2({ :title => "Brake light" });
+
+      var boolean = Storage.getValue("brakelight_on") ? true : false;
+      brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Brake light", null, "brakelight_on", boolean, null));
+
+      var mi = new WatchUi.MenuItem("Minimal speed |0.0 (km/h)", null, "brakelight_minimal_speed", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Speed slower|0.0~100 (%)", null, "brakelight_on_perc_0", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      brakeMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Mode", null, "brakelight_mode_0", null);
+      var value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      brakeMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Speed slowest|0.0~100 (%)", null, "brakelight_on_perc_1", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " %");
+      brakeMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Mode", null, "brakelight_mode_1", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      brakeMenu.addItem(mi);
+    
+      mi = new WatchUi.MenuItem("Brake border|0~10 (px)", null, "brakelight_border", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " px");
+      brakeMenu.addItem(mi);
+
+      boolean = Storage.getValue("brakelight_demo") ? true : false;
+      brakeMenu.addItem(        new WatchUi.ToggleMenuItem("Demo", null, "brakelight_demo", boolean, null));
+      
+      mi = new WatchUi.MenuItem("demo speed 0|0.0~100 (km/h)", null, "brakelight_data_0", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 1|0.0~100 (km/h)", null, "brakelight_data_1", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 2|0.0~100 (km/h)", null, "brakelight_data_2", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 30|0.0~100 (km/h)", null, "brakelight_data_3", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 4|0.0~100 (km/h)", null, "brakelight_data_4", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 5|0.0~100 (km/h)", null, "brakelight_data_5", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 6|0.0~100 (km/h)", null, "brakelight_data_6", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 7|0.0~100 (km/h)", null, "brakelight_data_7", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+      mi = new WatchUi.MenuItem("demo speed 8|0.0~100 (km/h)", null, "brakelight_data_8", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " km/h");
+      brakeMenu.addItem(mi);
+
+      WatchUi.pushView(brakeMenu, new $.GeneralMenuDelegate(self, brakeMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
+
+    if (id instanceof String && id.equals("radar")) {
+      var radarMenu = new WatchUi.Menu2({ :title => "Radar" });
+
+      var boolean = Storage.getValue("radar_enabled") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Enabled", null, "radar_enabled", boolean, null));
+
+      boolean = Storage.getValue("radar_first_detected_only") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Only first detected", null, "radar_first_detected_only", boolean, null));
+      
+      boolean = Storage.getValue("radar_activity_on_only") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Only when activity", null, "radar_activity_on_only", boolean, null));
+      
+      var mi = new WatchUi.MenuItem("When approaching", null, "radar_hit_mode_1", null);
+      var value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      radarMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("When fast approaching", null, "radar_hit_mode_2", null);
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getLightModeText(value));
+      radarMenu.addItem(mi);
+
+      boolean = Storage.getValue("radar_show_threat_side") ? true : false;
+      radarMenu.addItem(new WatchUi.ToggleMenuItem("Show threat side", null, "radar_show_threat_side", boolean, null));
+      
+
+      WatchUi.pushView(radarMenu, new $.GeneralMenuDelegate(self, radarMenu), WatchUi.SLIDE_UP);
+      return;
+    }
+
     if (id instanceof String && id.equals("test_TimerState")) {
       var sp = new selectionMenuPicker("Test TimerState", id as String);
       for (var i = -1; i <= 3; i++) {
@@ -342,6 +469,56 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+    if (
+      id instanceof String &&
+      (id.equals("brakelight_mode_0") ||
+       id.equals("brakelight_mode_1"))
+    ) {
+      var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
+
+      var sp = new selectionMenuPicker("Brakelightmode", id as String);
+      for (var i = -1; i <= 63; i++) {
+        if (
+          capableModes == null ||
+          (capableModes as Lang.Array<AntPlus.LightMode>).indexOf(i as AntPlus.LightMode) > -1
+        ) {
+          var text = $.getLightModeText(i);
+          if (text.length() > 0) {
+            sp.add(text, "", i);
+          }
+        }
+      }
+
+      sp.setOnSelected(self, :onSelectedSelection, item);
+      sp.show();
+      return;
+    }
+
+ if (
+      id instanceof String &&
+      (id.equals("radar_hit_mode_1") || id.equals("radar_hit_mode_2") ))
+     {
+      var capableModes = $.getCapableLightModes(AntPlus.LIGHT_TYPE_TAILLIGHT);
+
+      var sp = new selectionMenuPicker("Radarhitmode", id as String);
+      for (var i = -1; i <= 63; i++) {
+        if (
+          capableModes == null ||
+          (capableModes as Lang.Array<AntPlus.LightMode>).indexOf(i as AntPlus.LightMode) > -1
+        ) {
+          var text = $.getLightModeText(i);
+          if (text.length() > 0) {
+            sp.add(text, "", i);
+          }
+        }
+      }
+
+      sp.setOnSelected(self, :onSelectedSelection, item);
+      sp.show();
+      return;
+    }
+
+
     if (id instanceof String && id.equals("display_field")) {
       var sp = new selectionMenuPicker("Display field", id as String);
       for (var i = 0; i <= 8; i++) {
@@ -422,15 +599,15 @@ function getLightModeText(value as Number) as String {
     case 0:
       return "off"; // LIGHT_MODE_OFF
     case 1:
-      return "80-100%"; // LIGHT_MODE_ST_81_100
+      return "100%"; // LIGHT_MODE_ST_81_100
     case 2:
-      return "60-80%"; //LIGHT_MODE_ST_61_80
+      return "80%"; //LIGHT_MODE_ST_61_80
     case 3:
-      return "40-60%"; //LIGHT_MODE_ST_41_60
+      return "60%"; //LIGHT_MODE_ST_41_60
     case 4:
-      return "20-40%"; //LIGHT_MODE_ST_21_40
+      return "40%"; //LIGHT_MODE_ST_21_40
     case 5:
-      return "0-20%"; //LIGHT_MODE_ST_0_20
+      return "20%"; //LIGHT_MODE_ST_0_20
     case 6:
       return "slow flash"; //LIGHT_MODE_SLOW_FLASH
     case 7:
@@ -472,15 +649,15 @@ function getLightModeTextShort(value as Number) as String {
     case 0:
       return "off"; // LIGHT_MODE_OFF
     case 1:
-      return "80-100"; // LIGHT_MODE_ST_81_100
+      return "100"; // LIGHT_MODE_ST_81_100
     case 2:
-      return "60-80"; //LIGHT_MODE_ST_61_80
+      return "80"; //LIGHT_MODE_ST_61_80
     case 3:
-      return "40-60"; //LIGHT_MODE_ST_41_60
+      return "60"; //LIGHT_MODE_ST_41_60
     case 4:
-      return "20-40"; //LIGHT_MODE_ST_21_40
+      return "40"; //LIGHT_MODE_ST_21_40
     case 5:
-      return "0-20"; //LIGHT_MODE_ST_0_20
+      return "20"; //LIGHT_MODE_ST_0_20
     case 6:
       return "s-flash"; //LIGHT_MODE_SLOW_FLASH
     case 7:
