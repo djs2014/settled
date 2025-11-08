@@ -218,6 +218,10 @@ class CurrentLocation {
     return !isAtDaylightTime(time, !defValue); // ! default value
   }
 
+  function getSunrise() as Moment? { return mSunrise; }
+
+  function getSunset() as Moment? { return mSunset; }
+
   function getRelativeToObservation(latObservation as Double, lonObservation as Double) as String {
     if (!hasLocation() || latObservation == 0.0 || lonObservation == 0.0) {
       return "";

@@ -62,6 +62,11 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     mi.setSubLabel($.getLightModeFor("other_light_mode_"));
     menu.addItem(mi);
   
+    mi = new WatchUi.MenuItem("Night modes", null, "night_modes", null);
+    // TODO show enabled ..
+    // mi.setSubLabel($.getLightModeFor("other_light_mode_"));
+    menu.addItem(mi);
+  
     mi = new WatchUi.MenuItem("Alerts", null, "alerts", null);
     menu.addItem(mi);
 

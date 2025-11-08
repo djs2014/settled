@@ -343,6 +343,40 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+  if (id instanceof String && id.equals("night_modes")) {
+    var nightMenu = new WatchUi.Menu2({ :title => "Night modes" });
+
+      var boolean = Storage.getValue("head_nightlight_enabled") ? true : false;
+      nightMenu.addItem(new WatchUi.ToggleMenuItem("For head light", null, "head_nightlight_enabled", boolean, null));
+      boolean = Storage.getValue("tail_nightlight_enabled") ? true : false;
+      nightMenu.addItem(new WatchUi.ToggleMenuItem("For tail light", null, "tail_nightlight_enabled", boolean, null));
+      boolean = Storage.getValue("other_nightlight_enabled") ? true : false;
+      nightMenu.addItem(new WatchUi.ToggleMenuItem("For other light", null, "other_nightlight_enabled", boolean, null));
+
+      // Seconds before sunset or after sunrise the day/night switch is triggered
+      var mi = new WatchUi.MenuItem("Start before/after |0~3600 (sec)", null, "day_nite_switch_seconds", null);
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " sec");
+      nightMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Head light", null, "head_nightlight_mode", null);
+      mi.setSubLabel($.getLightModeUsingArray("head_nightlight_mode"));
+      nightMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Tail light", null, "tail_nightlight_mode", null);
+      mi.setSubLabel($.getLightModeUsingArray("tail_nightlight_mode"));
+      nightMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem("Other light", null, "other_nightlight_mode", null);
+      mi.setSubLabel($.getLightModeUsingArray("other_nightlight_mode"));
+      nightMenu.addItem(mi);
+
+      // TODO 
+      // add new MenuDelegate to show the options per menu item light modes
+      // try to make use of arrays so later we can convert the others
+      WatchUi.pushView(nightMenu, new $.LightModesMenuDelegate(nightMenu), WatchUi.SLIDE_UP);
+      return;
+  }
+
     if (id instanceof String && id.equals("test_TimerState")) {
       var sp = new selectionMenuPicker("Test TimerState", id as String);
       for (var i = -1; i <= 3; i++) {
@@ -729,6 +763,25 @@ function getLightModeFor(key as String) as String {
     $.getLightModeTextShort($.getStorageValue(key + "1", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "2", -1) as Number),
     $.getLightModeTextShort($.getStorageValue(key + "3", -1) as Number),
+    pauseAction,
+  ]);
+}
+// Key points to array
+function getLightModeUsingArray(key as String) as String {
+  var array = $.getStorageValue(key,[]) as Array<Number>;
+  var pauseAction = "";
+  if (array.size() < 5) {
+    return "--";
+  }
+  var sec = array[4] as Number;
+  if (sec > -1) {
+    pauseAction = sec.format("%0d") + ":" + $.getLightModeTextShort(array[5] as Number);
+  }
+  return Lang.format("$1$|$2$|$3$|$4$|$5$", [
+    $.getLightModeTextShort(array[0] as Number),
+    $.getLightModeTextShort(array[1] as Number),
+    $.getLightModeTextShort(array[2] as Number),
+    $.getLightModeTextShort(array[3] as Number),
     pauseAction,
   ]);
 }

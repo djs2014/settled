@@ -1,3 +1,7 @@
+settled -> nite settings backlight
+    gHead_nightlight_mode
+fallback field -> di gear == 0 -> show other data etc.
+
 optional - when rader detect a car -> set light mode to fast flash
 count brakes #x y/n
 display speed option -> enabled when demo active
