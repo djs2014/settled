@@ -1,7 +1,11 @@
-settled -> nite settings backlight
-    gHead_nightlight_mode
-fallback field -> di gear == 0 -> show other data etc.
+convert light modes to use array in storage
++ conversion old and remove obsolete fields
 
+fallback field  / when paused -> di gear == 0 -> show other data etc.
+
+use metrics and fieldtype -> for field to show + fallback
+optional show white / red/ circle for light status
+--
 optional - when rader detect a car -> set light mode to fast flash
 count brakes #x y/n
 display speed option -> enabled when demo active

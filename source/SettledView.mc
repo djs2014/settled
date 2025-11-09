@@ -169,8 +169,6 @@ class SettledView extends WatchUi.DataField {
           return niteModes;
         }
       }
-      // Still at night
-      return niteModes;
     }
     return dayModes;
   }
@@ -722,7 +720,7 @@ class SettledView extends WatchUi.DataField {
     if (status == AntPlus.LIGHT_NETWORK_STATE_FORMING) {
       text = "Network forming";
     } else if (status != AntPlus.LIGHT_NETWORK_STATE_FORMED) {
-      text = "No network";
+      text = "No light network";
     } else if (status == AntPlus.LIGHT_NETWORK_STATE_FORMED) {
       mBikeLights = mLightNetwork.getBikeLights();
 

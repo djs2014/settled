@@ -21,7 +21,14 @@ Settings are on device.
 - Head light: set mode based on timerstatus.
 - Tail light: set mode based on timerstatus.
 - Other light: set mode based on timerstatus.
-
+- Night modes: different modes during night time
+    - Enable for head light
+    - Enable for tail light
+    - Enable for other light
+    - Start before/afte x seconds: Example turn night mode on 120 seconds before actual night time.
+    - Head light: set mode based on timerstatus.
+    - Tail light: set mode based on timerstatus.
+    - Other light: set mode based on timerstatus.
 
 
 ## Display
