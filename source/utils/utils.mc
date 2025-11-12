@@ -31,14 +31,29 @@ function getActivityValue(
   return dflt;
 }
 
+// Note key contains `storageKey|index` or `storageKey`
 function getStorageValue(
   key as Application.PropertyKeyType,
   dflt as Application.PropertyValueType
 ) as Application.PropertyValueType {
   try {
-    var val = Toybox.Application.Storage.getValue(key);
-    if (val != null) {
-      return val;
+    // Check if key contains index (for array)
+    var idx = stringRight(key, "|", "").toNumber();
+    if (idx == null) {
+      var val = Toybox.Application.Storage.getValue(key);
+      if (val != null) {
+        return val;
+      }
+      return dflt;
+    }
+
+    // Get the value from the stored array
+    var storageKey = stringLeft(key, "|", "");
+    var array = Toybox.Application.Storage.getValue(storageKey);
+    if (array != null) {
+      if (idx > -1 && idx < array.size()) {
+        return array[idx];
+      }
     }
   } catch (ex) {
     return dflt;
@@ -549,6 +564,24 @@ function getShortTimeString(moment as Time.Moment?) as String {
   if (moment != null && moment instanceof Time.Moment) {
     var date = Gregorian.info(moment, Time.FORMAT_SHORT);
     return date.hour.format("%02d") + ":" + date.min.format("%02d");
+  }
+  return "";
+}
+
+function getLongTimeString(moment as Time.Moment?) as String {
+  if (moment != null && moment instanceof Time.Moment) {
+    var date = Gregorian.info(moment, Time.FORMAT_SHORT);
+    return (
+      date.day.format("%02d") +
+      "-" +
+      date.month.format("%02d") +
+      "-" +
+      date.year.format("%02d") +
+      " " +
+      date.hour.format("%02d") +
+      ":" +
+      date.min.format("%02d")
+    );
   }
   return "";
 }

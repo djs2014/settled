@@ -151,27 +151,74 @@ class SettledView extends WatchUi.DataField {
     niteEnabled as Boolean,
     niteModes as Array<Number>
   ) as Array<Number> {
-    if (niteEnabled) {
-      // If its Daytime now.
-      if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
-
-        // Check x seconds in the future to see if its going dark
-        if (mCurrentLocation.isAtNightTime(Time.now().add($.gDay_nite_switch_seconds), true)) {
-          // It will be night in d2nseconds, lets turn on niteModes
-          return niteModes;
-        }
-        
-        // Check x seconds in the past to see if it was dark
-        if (
-          mCurrentLocation.isAtNightTime(Time.now().subtract($.gDay_nite_switch_seconds), true)
-        ) {
-          // It was night in d2nseconds ago, so probably not light enough to turn on dayModes
-          return niteModes;
-        }
-      }
+    if (!niteEnabled) {
+      return dayModes;
     }
+
+    if (mCurrentLocation.isAtNightTime(Time.now(), false)) {
+      return niteModes;
+    }
+
+    // If its Daytime now.
+    // Check x seconds in the future to see if its going dark
+    if (
+      mCurrentLocation.isAtNightTime(
+        Time.now().add($.gDay_nite_switch_seconds),
+        true
+      )
+    ) {
+      // It will be night in d2nseconds, lets turn on niteModes
+      return niteModes;
+    }
+
+    // Check x seconds in the past to see if it was dark
+    if (
+      mCurrentLocation.isAtNightTime(
+        Time.now().subtract($.gDay_nite_switch_seconds),
+        true
+      )
+    ) {
+      // It was night in d2nseconds ago, so probably not light enough to turn on dayModes
+      return niteModes;
+    }
+
     return dayModes;
   }
+
+  // function testValidLightModes() as String {
+  //   mCurrentLocation.isAtNightTime(
+  //     Time.now().add($.gDay_nite_switch_seconds),
+  //     true
+  //   );
+
+  //   // If its Daytime now.
+  //   if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
+  //     // Check x seconds in the future to see if its going dark
+  //     if (
+  //       mCurrentLocation.isAtNightTime(
+  //         Time.now().add($.gDay_nite_switch_seconds),
+  //         true
+  //       )
+  //     ) {
+  //       // It will be night in d2nseconds, lets turn on niteModes
+  //       return "niteModes";
+  //     }
+
+  //     // Check x seconds in the past to see if it was dark
+  //     if (
+  //       mCurrentLocation.isAtNightTime(
+  //         Time.now().subtract($.gDay_nite_switch_seconds),
+  //         true
+  //       )
+  //     ) {
+  //       // It was night in d2nseconds ago, so probably not light enough to turn on dayModes
+  //       return "niteModes";
+  //     }
+  //     return "dayModes";
+  //   }
+  //   // Its night time
+  //   return "niteModes";
+  // }
 
   function compute(info as Activity.Info) as Void {
     var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
@@ -411,7 +458,7 @@ class SettledView extends WatchUi.DataField {
     mCurrentLocation.onCompute(info);
     var elapsedDistance =
       $.getActivityValue(info, :elapsedDistance, 0.0f) as Float;
-    processBackLightTrigger(elapsedDistance.toNumber());
+    processBackLightTrigger(elapsedDistance.toNumber());    
   }
 
   function playAlertWhenStopped() as Void {

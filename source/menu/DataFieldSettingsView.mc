@@ -50,21 +50,22 @@ class DataFieldSettingsDelegate extends WatchUi.BehaviorDelegate {
     var mi = new WatchUi.MenuItem("Display", null, "display", null);
     menu.addItem(mi);
 
-    mi = new WatchUi.MenuItem("Head light", null, "head_light_mode_", null);
-    mi.setSubLabel($.getLightModeFor("head_light_mode_"));
-    menu.addItem(mi);
+    // mi = new WatchUi.MenuItem("Head light", null, "head_light_mode_", null);
+    // mi.setSubLabel($.getLightModeFor("head_light_mode_"));
+    // menu.addItem(mi);
 
-    mi = new WatchUi.MenuItem("Tail light", null, "tail_light_mode_", null);
-    mi.setSubLabel($.getLightModeFor("tail_light_mode_"));
-    menu.addItem(mi);
+    // mi = new WatchUi.MenuItem("Tail light", null, "tail_light_mode_", null);
+    // mi.setSubLabel($.getLightModeFor("tail_light_mode_"));
+    // menu.addItem(mi);
 
-    mi = new WatchUi.MenuItem("Other light", null, "other_light_mode_", null);
-    mi.setSubLabel($.getLightModeFor("other_light_mode_"));
-    menu.addItem(mi);
-  
-    mi = new WatchUi.MenuItem("Night modes", null, "night_modes", null);
-    // TODO show enabled ..
+    // mi = new WatchUi.MenuItem("Other light", null, "other_light_mode_", null);
     // mi.setSubLabel($.getLightModeFor("other_light_mode_"));
+    // menu.addItem(mi);
+
+    mi = new WatchUi.MenuItem("Day light modes", null, "daylight_modes", null);
+    menu.addItem(mi);
+
+    mi = new WatchUi.MenuItem("Night light modes", null, "nightlight_modes", null);
     menu.addItem(mi);
   
     mi = new WatchUi.MenuItem("Alerts", null, "alerts", null);

@@ -53,11 +53,14 @@ class LightModesMenuDelegate extends WatchUi.Menu2InputDelegate {
       id instanceof String &&
       (id.equals("head_nightlight_mode") ||
         id.equals("tail_nightlight_mode") ||
-        id.equals("other_nightlight_mode"))
+        id.equals("other_nightlight_mode") ||
+        id.equals("head_daylight_mode") ||
+        id.equals("tail_daylight_mode") ||
+        id.equals("other_daylight_mode"))
     ) {
-      var title = stringReplace(id.toString(), "_", " ");      
+      var title = stringReplace(id.toString(), "_", " ");
       var tlMenu = new WatchUi.Menu2({ :title => title });
-      
+
       var storageKey = id.toString();
 
       var array = $.getStorageValue(storageKey, []) as Array<Number>;
@@ -143,10 +146,16 @@ class LightModesMenuDelegate extends WatchUi.Menu2InputDelegate {
       );
       return;
     }
-    
+
     if (
       id instanceof String &&
-      (id.equals("head_nightlight_mode|0") ||
+      (id.equals("head_daylight_mode|0") ||
+        id.equals("head_daylight_mode|1") ||
+        id.equals("head_daylight_mode|2") ||
+        id.equals("head_daylight_mode|3") ||
+        id.equals("head_daylight_mode|5") ||
+        id.equals("head_daylight_mode|7") ||
+        id.equals("head_nightlight_mode|0") ||
         id.equals("head_nightlight_mode|1") ||
         id.equals("head_nightlight_mode|2") ||
         id.equals("head_nightlight_mode|3") ||
@@ -175,7 +184,13 @@ class LightModesMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
     if (
       id instanceof String &&
-      (id.equals("tail_nightlight_mode|0") ||
+      (id.equals("tail_daylight_mode|0") ||
+        id.equals("tail_daylight_mode|1") ||
+        id.equals("tail_daylight_mode|2") ||
+        id.equals("tail_daylight_mode|3") ||
+        id.equals("tail_daylight_mode|5") ||
+        id.equals("tail_daylight_mode|7") ||
+        id.equals("tail_nightlight_mode|0") ||
         id.equals("tail_nightlight_mode|1") ||
         id.equals("tail_nightlight_mode|2") ||
         id.equals("tail_nightlight_mode|3") ||
@@ -206,7 +221,13 @@ class LightModesMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     if (
       id instanceof String &&
-      (id.equals("other_nightlight_mode|0") ||
+      (id.equals("other_daylight_mode|0") ||
+        id.equals("other_daylight_mode|1") ||
+        id.equals("other_daylight_mode|2") ||
+        id.equals("other_daylight_mode|3") ||
+        id.equals("other_daylight_mode|5") ||
+        id.equals("other_daylight_mode|7") ||
+        id.equals("other_nightlight_mode|0") ||
         id.equals("other_nightlight_mode|1") ||
         id.equals("other_nightlight_mode|2") ||
         id.equals("other_nightlight_mode|3") ||
@@ -236,6 +257,7 @@ class LightModesMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     // Numeric input (TODO, is from array or plain storageKey)
     var prompt = item.getLabel();
+    System.println(["Numeric input key:", id]);
     var value = $.getStorageValue(id as String, 0) as Numeric;
     var view = $.getNumericInputView(prompt, value);
     view.setOnAccept(self, :onAcceptNumericinput);

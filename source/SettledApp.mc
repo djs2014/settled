@@ -64,6 +64,70 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_hit_mode_2", 7);
       }
 
+      var convertLM = Storage.getValue("head_daylight_mode");
+      if (convertLM == null) {
+        $.gHead_light_mode =
+          [
+            $.getStorageValue("head_light_mode_0", 0) as Number,
+            $.getStorageValue("head_light_mode_1", 0) as Number,
+            $.getStorageValue("head_light_mode_2", 6) as Number,
+            $.getStorageValue("head_light_mode_3", 7) as Number,
+            $.getStorageValue("head_light_mode_4", 15) as Number,
+            $.getStorageValue("head_light_mode_5", 0) as Number,
+            $.getStorageValue("head_light_mode_6", 0) as Number,
+            $.getStorageValue("head_light_mode_7", 2) as Number,
+          ] as Array<Number>;
+        Storage.setValue("head_daylight_mode", $.gHead_light_mode);
+        Storage.deleteValue("head_light_mode_0");
+        Storage.deleteValue("head_light_mode_1");
+        Storage.deleteValue("head_light_mode_2");
+        Storage.deleteValue("head_light_mode_3");
+        Storage.deleteValue("head_light_mode_4");
+        Storage.deleteValue("head_light_mode_5");
+        Storage.deleteValue("head_light_mode_6");
+        Storage.deleteValue("head_light_mode_7");
+        $.gTail_light_mode =
+          [
+            $.getStorageValue("tail_light_mode_0", 0) as Number,
+            $.getStorageValue("tail_light_mode_1", 0) as Number,
+            $.getStorageValue("tail_light_mode_2", 6) as Number,
+            $.getStorageValue("tail_light_mode_3", 0) as Number,
+            $.getStorageValue("tail_light_mode_4", 15) as Number,
+            $.getStorageValue("tail_light_mode_5", 0) as Number,
+            $.getStorageValue("tail_light_mode_6", 0) as Number,
+            $.getStorageValue("tail_light_mode_7", -1) as Number,
+          ] as Array<Number>;
+        Storage.setValue("tail_daylight_mode", $.gTail_light_mode);
+        Storage.deleteValue("tail_light_mode_0");
+        Storage.deleteValue("tail_light_mode_1");
+        Storage.deleteValue("tail_light_mode_2");
+        Storage.deleteValue("tail_light_mode_3");
+        Storage.deleteValue("tail_light_mode_4");
+        Storage.deleteValue("tail_light_mode_5");
+        Storage.deleteValue("tail_light_mode_6");
+        Storage.deleteValue("tail_light_mode_7");
+        $.gOther_light_mode =
+          [
+            $.getStorageValue("other_light_mode_0", 0) as Number,
+            $.getStorageValue("other_light_mode_1", 0) as Number,
+            $.getStorageValue("other_light_mode_2", 6) as Number,
+            $.getStorageValue("other_light_mode_3", 7) as Number,
+            $.getStorageValue("other_light_mode_4", 15) as Number,
+            $.getStorageValue("other_light_mode_5", 0) as Number,
+            $.getStorageValue("other_light_mode_6", 0) as Number,
+            $.getStorageValue("other_light_mode_7", -1) as Number,
+          ] as Array<Number>;
+        Storage.setValue("other_daylight_mode", $.gOther_light_mode);
+        Storage.deleteValue("other_light_mode_0");
+        Storage.deleteValue("other_light_mode_1");
+        Storage.deleteValue("other_light_mode_2");
+        Storage.deleteValue("other_light_mode_3");
+        Storage.deleteValue("other_light_mode_4");
+        Storage.deleteValue("other_light_mode_5");
+        Storage.deleteValue("other_light_mode_6");
+        Storage.deleteValue("other_light_mode_7");
+      }
+
       // TODO, store as array and not individually *_mode_*
       // + Conversion old model to new
       var reset = Storage.getValue("resetDefaults");
@@ -74,32 +138,35 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("debug", false);
         Storage.setValue("test_TimerState", -1);
 
-        Storage.setValue("head_light_mode_0", 0); // off
-        Storage.setValue("head_light_mode_1", 0); // stopped -> off
-        Storage.setValue("head_light_mode_2", 6); // paused -> slow flash
-        Storage.setValue("head_light_mode_3", 7); // on -> 7 =fast flash
-        Storage.setValue("head_light_mode_4", 15); // seconds in paused
-        Storage.setValue("head_light_mode_5", 0); // paused for seconds
-        Storage.setValue("head_light_mode_6", 0); // Solar intensity drops to %
-        Storage.setValue("head_light_mode_7", 2); // Light mode solid 60-80%
+        // Storage.setValue("head_light_mode_0", 0); // off
+        // Storage.setValue("head_light_mode_1", 0); // stopped -> off
+        // Storage.setValue("head_light_mode_2", 6); // paused -> slow flash
+        // Storage.setValue("head_light_mode_3", 7); // on -> 7 =fast flash
+        // Storage.setValue("head_light_mode_4", 15); // seconds in paused
+        // Storage.setValue("head_light_mode_5", 0); // paused for seconds
+        // Storage.setValue("head_light_mode_6", 0); // Solar intensity drops to %
+        // Storage.setValue("head_light_mode_7", 2); // Light mode solid 60-80%
+        Storage.setValue("head_daylight_mode", [0, 0, 6, 7, 15, 0, 0, 2]);
 
-        Storage.setValue("tail_light_mode_0", 0);
-        Storage.setValue("tail_light_mode_1", 0);
-        Storage.setValue("tail_light_mode_2", 6);
-        Storage.setValue("tail_light_mode_3", 0); // activity on -> off
-        Storage.setValue("tail_light_mode_4", 15);
-        Storage.setValue("tail_light_mode_5", 0);
-        Storage.setValue("tail_light_mode_6", 0);
-        Storage.setValue("tail_light_mode_7", -1);
+        // Storage.setValue("tail_light_mode_0", 0);
+        // Storage.setValue("tail_light_mode_1", 0);
+        // Storage.setValue("tail_light_mode_2", 6);
+        // Storage.setValue("tail_light_mode_3", 0); // activity on -> off
+        // Storage.setValue("tail_light_mode_4", 15);
+        // Storage.setValue("tail_light_mode_5", 0);
+        // Storage.setValue("tail_light_mode_6", 0);
+        // Storage.setValue("tail_light_mode_7", -1);
+        Storage.setValue("tail_daylight_mode", [0, 0, 6, 0, 15, 0, 0, -1]);
 
-        Storage.setValue("other_light_mode_0", 0);
-        Storage.setValue("other_light_mode_1", 0);
-        Storage.setValue("other_light_mode_2", 6);
-        Storage.setValue("other_light_mode_3", 7); // activity on -> fast flash
-        Storage.setValue("other_light_mode_4", 15);
-        Storage.setValue("other_light_mode_5", 0);
-        Storage.setValue("other_light_mode_6", 0);
-        Storage.setValue("other_light_mode_7", -1);
+        // Storage.setValue("other_light_mode_0", 0);
+        // Storage.setValue("other_light_mode_1", 0);
+        // Storage.setValue("other_light_mode_2", 6);
+        // Storage.setValue("other_light_mode_3", 7); // activity on -> fast flash
+        // Storage.setValue("other_light_mode_4", 15);
+        // Storage.setValue("other_light_mode_5", 0);
+        // Storage.setValue("other_light_mode_6", 0);
+        // Storage.setValue("other_light_mode_7", -1);
+        Storage.setValue("other_daylight_mode", [0, 0, 6, 7, 15, 0, 0, -1]);
 
         Storage.setValue("head_nightlight_mode", [0, 0, 6, 7, 15, 0, 0 - 1]);
         Storage.setValue("tail_nightlight_mode", [0, 0, 6, 5, 15, 0, 0, -1]);
@@ -171,38 +238,54 @@ class SettledApp extends Application.AppBase {
         $.getStorageValue("test_TimerState", $.gtest_TimerState) as Number;
 
       $.gHead_light_mode =
-        [
-          $.getStorageValue("head_light_mode_0", 0) as Number,
-          $.getStorageValue("head_light_mode_1", 0) as Number,
-          $.getStorageValue("head_light_mode_2", 6) as Number,
-          $.getStorageValue("head_light_mode_3", 7) as Number,
-          $.getStorageValue("head_light_mode_4", 15) as Number,
-          $.getStorageValue("head_light_mode_5", 0) as Number,
-          $.getStorageValue("head_light_mode_6", 0) as Number,
-          $.getStorageValue("head_light_mode_7", 2) as Number,
-        ] as Array<Number>;
+        getStorageValue(
+          "head_daylight_mode",
+          $.gHead_light_mode as Lang.Array<Application.PropertyValueType>
+        ) as Array<Number>;
       $.gTail_light_mode =
-        [
-          $.getStorageValue("tail_light_mode_0", 0) as Number,
-          $.getStorageValue("tail_light_mode_1", 0) as Number,
-          $.getStorageValue("tail_light_mode_2", 6) as Number,
-          $.getStorageValue("tail_light_mode_3", 0) as Number,
-          $.getStorageValue("tail_light_mode_4", 15) as Number,
-          $.getStorageValue("tail_light_mode_5", 0) as Number,
-          $.getStorageValue("tail_light_mode_6", 0) as Number,
-          $.getStorageValue("tail_light_mode_7", -1) as Number,
-        ] as Array<Number>;
+        getStorageValue(
+          "tail_daylight_mode",
+          $.gTail_light_mode as Lang.Array<Application.PropertyValueType>
+        ) as Array<Number>;
       $.gOther_light_mode =
-        [
-          $.getStorageValue("other_light_mode_0", 0) as Number,
-          $.getStorageValue("other_light_mode_1", 0) as Number,
-          $.getStorageValue("other_light_mode_2", 6) as Number,
-          $.getStorageValue("other_light_mode_3", 7) as Number,
-          $.getStorageValue("other_light_mode_4", 15) as Number,
-          $.getStorageValue("other_light_mode_5", 0) as Number,
-          $.getStorageValue("other_light_mode_6", 0) as Number,
-          $.getStorageValue("other_light_mode_7", -1) as Number,
-        ] as Array<Number>;
+        getStorageValue(
+          "other_daylight_mode",
+          $.gOther_light_mode as Lang.Array<Application.PropertyValueType>
+        ) as Array<Number>;
+
+      // $.gHead_light_mode =
+      //   [
+      //     $.getStorageValue("head_light_mode_0", 0) as Number,
+      //     $.getStorageValue("head_light_mode_1", 0) as Number,
+      //     $.getStorageValue("head_light_mode_2", 6) as Number,
+      //     $.getStorageValue("head_light_mode_3", 7) as Number,
+      //     $.getStorageValue("head_light_mode_4", 15) as Number,
+      //     $.getStorageValue("head_light_mode_5", 0) as Number,
+      //     $.getStorageValue("head_light_mode_6", 0) as Number,
+      //     $.getStorageValue("head_light_mode_7", 2) as Number,
+      //   ] as Array<Number>;
+      // $.gTail_light_mode =
+      //   [
+      //     $.getStorageValue("tail_light_mode_0", 0) as Number,
+      //     $.getStorageValue("tail_light_mode_1", 0) as Number,
+      //     $.getStorageValue("tail_light_mode_2", 6) as Number,
+      //     $.getStorageValue("tail_light_mode_3", 0) as Number,
+      //     $.getStorageValue("tail_light_mode_4", 15) as Number,
+      //     $.getStorageValue("tail_light_mode_5", 0) as Number,
+      //     $.getStorageValue("tail_light_mode_6", 0) as Number,
+      //     $.getStorageValue("tail_light_mode_7", -1) as Number,
+      //   ] as Array<Number>;
+      // $.gOther_light_mode =
+      //   [
+      //     $.getStorageValue("other_light_mode_0", 0) as Number,
+      //     $.getStorageValue("other_light_mode_1", 0) as Number,
+      //     $.getStorageValue("other_light_mode_2", 6) as Number,
+      //     $.getStorageValue("other_light_mode_3", 7) as Number,
+      //     $.getStorageValue("other_light_mode_4", 15) as Number,
+      //     $.getStorageValue("other_light_mode_5", 0) as Number,
+      //     $.getStorageValue("other_light_mode_6", 0) as Number,
+      //     $.getStorageValue("other_light_mode_7", -1) as Number,
+      //   ] as Array<Number>;
 
       // TODO fill the arrays
       // TODO check on correct size -> fill with -1
@@ -215,8 +298,7 @@ class SettledApp extends Application.AppBase {
         $.gHead_nightlight_mode =
           getStorageValue(
             "head_nightlight_mode",
-            $.gHead_nightlight_mode as
-              Lang.Array<Application.PropertyValueType>
+            $.gHead_nightlight_mode as Lang.Array<Application.PropertyValueType>
           ) as Array<Number>;
       }
       $.gTail_nightlight_enabled =
@@ -225,8 +307,7 @@ class SettledApp extends Application.AppBase {
         $.gTail_nightlight_mode =
           getStorageValue(
             "tail_nightlight_mode",
-            $.gTail_nightlight_mode as
-              Lang.Array<Application.PropertyValueType>
+            $.gTail_nightlight_mode as Lang.Array<Application.PropertyValueType>
           ) as Array<Number>;
       }
       $.gOther_nightlight_enabled =

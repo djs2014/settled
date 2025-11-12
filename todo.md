@@ -1,5 +1,9 @@
-convert light modes to use array in storage
-+ conversion old and remove obsolete fields
+
+x bug isnighttime -> get sunset/sunrise dynamic locations utils update 
+test it
+
+x convert light modes to use array in storage
+x + conversion old and remove obsolete fields
 
 fallback field  / when paused -> di gear == 0 -> show other data etc.
 
