@@ -28,7 +28,7 @@ class LightModesMenuDelegate extends WatchUi.Menu2InputDelegate {
     var id = item.getId() as String;
 
     // Extract selected storage key and index
-    _storageKey = stringLeft(id, "|", "");
+    _storageKey = stringLeft(id, "|", id);
     var idx = stringRight(id, "|", "").toNumber();
     if (idx == null) {
       _arrayIndex = -1;

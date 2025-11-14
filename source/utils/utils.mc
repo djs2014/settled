@@ -39,7 +39,8 @@ function getStorageValue(
   try {
     // Check if key contains index (for array)
     var idx = stringRight(key, "|", "").toNumber();
-    if (idx == null) {
+    System.println(["getStorageValue idx", idx]);
+    if (idx == null || idx == "") {
       var val = Toybox.Application.Storage.getValue(key);
       if (val != null) {
         return val;
@@ -48,7 +49,8 @@ function getStorageValue(
     }
 
     // Get the value from the stored array
-    var storageKey = stringLeft(key, "|", "");
+    var storageKey = stringLeft(key, "|", key);
+    System.println(["getStorageValue storageKey", storageKey]);
     var array = Toybox.Application.Storage.getValue(storageKey);
     if (array != null) {
       if (idx > -1 && idx < array.size()) {
@@ -72,9 +74,10 @@ function setStorageValueOrArray(
   }
 
   // Extract selected storage key and index
-  var storageKey = stringLeft(key, "|", "");
+  var storageKey = stringLeft(key, "|", key);
   var idx = stringRight(key, "|", "").toNumber();
-  if (idx == null) {
+  System.println(["setStorageValueOrArray storageKey|idx", storageKey, idx]);
+  if (idx == null || idx == "") {
     Storage.setValue(storageKey, value);
     return;
   }

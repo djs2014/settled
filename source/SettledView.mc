@@ -73,8 +73,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mUseFontsNumbers as Boolean = true;
   hidden var mActivityNeverHappened as Boolean = true;
 
-  hidden var mLat as Double = 0d;
-  hidden var mLon as Double = 0d;
+  hidden var mSunrise as Time.Moment?;
+  hidden var mSunset as Time.Moment?;
   hidden var mCurrentLocation as CurrentLocation;
   hidden var mBackLightSeconds as Number = -1;
   hidden var mBackLightMeters as Number = -1;
@@ -114,12 +114,40 @@ class SettledView extends WatchUi.DataField {
     }
 
     mCurrentLocation = new CurrentLocation();
-    mCurrentLocation.setOnLocationChanged(self, :onLocationChanged);
+    // Changes in setting only after restart of the app!
+    mCurrentLocation.setMinDegreesDifferenceSunevent(
+      $.gSunEventDegreesDifference
+    );
+
+    mCurrentLocation.setOnSunEventChanged(self, :onSunEventChanged);
   }
 
-  function onLocationChanged(degrees as Array<Double>) as Void {
-    mLat = degrees[0];
-    mLon = degrees[1];
+  function onSunEventChanged(sunrise as Moment?, sunset as Moment?) {
+    mSunrise = sunrise;
+    mSunset = sunset;
+  }
+
+  function isAtNightTime(time as Moment, defValue as Boolean) as Boolean {
+    if (mSunrise == null || mSunset == null) {
+      return defValue;
+    }
+
+    var nightTime =
+      time.value() < (mSunrise as Moment).value() ||
+      (mSunset as Moment).value() <= time.value();
+
+    // System.println([
+    //   "IsNightTime:",
+    //   nightTime.toString(),
+    //   "Sunrise:",
+    //   $.getLongTimeString(mSunrise),
+    //   " sunset:",
+    //   $.getLongTimeString(mSunset),
+    //   " when:",
+    //   $.getLongTimeString(time),
+    // ]);
+
+    return nightTime;
   }
 
   function onLayout(dc as Dc) as Void {
@@ -155,72 +183,33 @@ class SettledView extends WatchUi.DataField {
       return dayModes;
     }
 
-    if (mCurrentLocation.isAtNightTime(Time.now(), false)) {
+    if (isAtNightTime(Time.now(), false)) {
+      // System.println(["Is at nighttime 1"]);
       return niteModes;
     }
 
     // If its Daytime now.
     // Check x seconds in the future to see if its going dark
-    if (
-      mCurrentLocation.isAtNightTime(
-        Time.now().add($.gDay_nite_switch_seconds),
-        true
-      )
-    ) {
+    if (isAtNightTime(Time.now().add($.gDay_nite_switch_seconds), false)) {
       // It will be night in d2nseconds, lets turn on niteModes
+      // System.println(["Is at nighttime 2 +", $.gDay_nite_switch_seconds]);
       return niteModes;
     }
 
     // Check x seconds in the past to see if it was dark
-    if (
-      mCurrentLocation.isAtNightTime(
-        Time.now().subtract($.gDay_nite_switch_seconds),
-        true
-      )
-    ) {
+    if (isAtNightTime(Time.now().subtract($.gDay_nite_switch_seconds), false)) {
       // It was night in d2nseconds ago, so probably not light enough to turn on dayModes
+      // System.println(["Is at nighttime 3 -", $.gDay_nite_switch_seconds]);
       return niteModes;
     }
 
+    // System.println(["Is at daytime"]);
     return dayModes;
   }
 
-  // function testValidLightModes() as String {
-  //   mCurrentLocation.isAtNightTime(
-  //     Time.now().add($.gDay_nite_switch_seconds),
-  //     true
-  //   );
-
-  //   // If its Daytime now.
-  //   if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
-  //     // Check x seconds in the future to see if its going dark
-  //     if (
-  //       mCurrentLocation.isAtNightTime(
-  //         Time.now().add($.gDay_nite_switch_seconds),
-  //         true
-  //       )
-  //     ) {
-  //       // It will be night in d2nseconds, lets turn on niteModes
-  //       return "niteModes";
-  //     }
-
-  //     // Check x seconds in the past to see if it was dark
-  //     if (
-  //       mCurrentLocation.isAtNightTime(
-  //         Time.now().subtract($.gDay_nite_switch_seconds),
-  //         true
-  //       )
-  //     ) {
-  //       // It was night in d2nseconds ago, so probably not light enough to turn on dayModes
-  //       return "niteModes";
-  //     }
-  //     return "dayModes";
-  //   }
-  //   // Its night time
-  //   return "niteModes";
-  // }
-
   function compute(info as Activity.Info) as Void {
+    var test = getValidLightModes([], true, []);
+
     var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
 
     mTimerState =
@@ -458,7 +447,7 @@ class SettledView extends WatchUi.DataField {
     mCurrentLocation.onCompute(info);
     var elapsedDistance =
       $.getActivityValue(info, :elapsedDistance, 0.0f) as Float;
-    processBackLightTrigger(elapsedDistance.toNumber());    
+    processBackLightTrigger(elapsedDistance.toNumber());
   }
 
   function playAlertWhenStopped() as Void {
@@ -497,7 +486,7 @@ class SettledView extends WatchUi.DataField {
       return;
     }
     if ($.gBacklight_at_night) {
-      if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
+      if (!isAtNightTime(Time.now(), true)) {
         return;
       }
     }
