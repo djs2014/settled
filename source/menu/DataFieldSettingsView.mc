@@ -9,7 +9,7 @@ var gExitedMenu as Boolean = false;
 //! Initial view for the settings
 class DataFieldSettingsView extends WatchUi.View {
   //! Constructor
-  function initialize() {
+  function initialize() {    
     View.initialize();
   }
 

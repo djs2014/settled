@@ -1,3 +1,10 @@
+numeric input -> for none touch screens
+    - update to other project numericinputview / delegate
+    
+show battery radar
+test menu edge 530 - long press
+
+
 
 x bug isnighttime -> get sunset/sunrise dynamic locations utils update 
 test it
