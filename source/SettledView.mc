@@ -87,6 +87,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mHasTaillight as Boolean = false;
   // hidden var mBrakelightCounter as Number = 0;
 
+  hidden var mRadarBatteryLevel as Number = -1;
+
   function initialize() {
     DataField.initialize();
 
@@ -730,6 +732,10 @@ class SettledView extends WatchUi.DataField {
       dc.setPenWidth(1);
     }
 
+    if ($.gRadar_enabled && $.gRadar_show_battery && mRadarBatteryLevel > -1) {
+      drawBatteryLevel(dc, 1,1, 25, 10, mRadarBatteryLevel);
+    }
+    
     // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
     //   dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     //   text = "#" + mBrakelightCounter.format("%d");
@@ -954,6 +960,10 @@ class SettledView extends WatchUi.DataField {
       (mode as Number).format("%d");
   }
 
+  function onUpdateRadarBattery(data as AntPlus.BatteryStatus) as Void {
+    mRadarBatteryLevel = getBatteryLevel(data.batteryStatus);
+  }
+
   function onUpdateRadar(data as Lang.Array<AntPlus.RadarTarget>) as Void {
     mRadarTargetAmountRight = 0;
     mRadarTargetAmountLeft = 0;
@@ -1031,6 +1041,61 @@ class SettledView extends WatchUi.DataField {
       default:
         return "--";
     }
+  }
+
+  hidden function drawBatteryLevel(
+    dc as Dc,
+    x as Number,
+    y as Number,
+    width as Number,
+    height as Number,
+    batteryLevel as Number
+  ) as Void {
+    if (batteryLevel < 0) {
+      return;
+    }
+
+    var m = 2;
+    var w = 17;
+    var h = 7;
+    var x1 = x + width - w - m;
+    var y1 = y + 1 + m;
+
+    if (batteryLevel >= 4) {
+      dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+    } else if (batteryLevel >= 3) {
+      dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+    } else {
+      dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+    }
+    dc.drawRoundedRectangle(x1, y1, w, h, 2);
+    dc.fillRectangle(x1 - 1, y1 + h / 2 - 2, 2, 4);
+    for (var i = 0; i < batteryLevel; i++) {
+      dc.fillRectangle(x1 + w - 1 - (i + 1) * 3, y1 + 1, 2, 5);
+    }
+  }
+
+  hidden function getBatteryLevel(
+    batteryStatus as AntPlus.BatteryStatusValue?
+  ) as Number {
+    if (batteryStatus == null) {
+      return -1;
+    }
+
+    if (batteryStatus == AntPlus.BATT_STATUS_NEW) {
+      return 5;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_GOOD) {
+      return 4;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_OK) {
+      return 3;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_LOW) {
+      return 2;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_CRITICAL) {
+      return 1;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_INVALID) {
+      return 0;
+    }
+    return -1;
   }
 }
 

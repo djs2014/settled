@@ -60,6 +60,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_first_detected_only", true);
         Storage.setValue("radar_activity_on_only", true);
         Storage.setValue("radar_show_threat_side", true);
+        Storage.setValue("radar_show_battery", true);
         Storage.setValue("radar_hit_mode_1", 7);
         Storage.setValue("radar_hit_mode_2", 7);
       }
@@ -190,6 +191,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_first_detected_only", true);
         Storage.setValue("radar_activity_on_only", true);
         Storage.setValue("radar_show_threat_side", true);
+        Storage.setValue("radar_show_battery", true);
         Storage.setValue("radar_hit_mode_1", 7);
         Storage.setValue("radar_hit_mode_2", 7);
       }
@@ -420,6 +422,11 @@ class SettledApp extends Application.AppBase {
           $.getStorageValue("radar_hit_mode_1", $.gRadar_hit_mode_1) as Number;
         $.gRadar_hit_mode_2 =
           $.getStorageValue("radar_hit_mode_2", $.gRadar_hit_mode_2) as Number;
+        $.gRadar_show_battery =
+          $.getStorageValue(
+            "radar_show_battery",
+            $.gRadar_show_battery
+          ) as Boolean;
       }
 
       System.println("User settings loaded");
@@ -499,6 +506,7 @@ var gRadar_activity_on_only as Boolean = true;
 var gRadar_hit_mode_1 as Number = 7; // Fast flash
 var gRadar_hit_mode_2 as Number = 7; // Fast flash
 var gRadar_show_threat_side as Boolean = true;
+var gRadar_show_battery as Boolean = true;
 
 public enum FieldDisplay {
   FldLights = 0,

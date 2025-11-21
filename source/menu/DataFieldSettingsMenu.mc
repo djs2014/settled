@@ -7,8 +7,9 @@ import Toybox.AntPlus;
 import Toybox.Activity;
 
 class DataFieldSettingsMenu extends WatchUi.Menu2 {
+  
   function initialize() {
-    Menu2.initialize({ :title => "Settings" });
+    Menu2.initialize({ :title => "Settings" });  
   }
 }
 
@@ -454,6 +455,28 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
           null
         )
       );
+
+      boolean = Storage.getValue("radar_show_battery") ? true : false;
+      radarMenu.addItem(
+        new WatchUi.ToggleMenuItem(
+          "Show battery",
+          null,
+          "radar_show_battery",
+          boolean,
+          null
+        )
+      );
+
+      // TODO, later select when to show battery ..
+      // mi = new WatchUi.MenuItem(
+      //   "Show when lower than",
+      //   null,
+      //   "radar_show_battery_treshold",
+      //   null
+      // );
+      // value = getStorageValue(mi.getId() as String, 0) as Number;
+      // mi.setSubLabel($.getBatterylevelText(value));
+      // radarMenu.addItem(mi);
 
       WatchUi.pushView(
         radarMenu,

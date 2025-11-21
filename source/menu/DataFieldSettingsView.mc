@@ -8,18 +8,35 @@ var gExitedMenu as Boolean = false;
 
 //! Initial view for the settings
 class DataFieldSettingsView extends WatchUi.View {
+
+  hidden var _backColor as Graphics.ColorType = Graphics.COLOR_BLACK;
+  hidden var _textColor as Graphics.ColorType = Graphics.COLOR_WHITE;
+  hidden var _isNightModeEnabled as Boolean = true;
+
   //! Constructor
   function initialize() {    
     View.initialize();
+
+    var settings = System.getDeviceSettings();
+    if (settings has :isNightModeEnabled) {
+      _isNightModeEnabled = settings.isNightModeEnabled;
+    }
+    if (_isNightModeEnabled) {
+      _backColor = Graphics.COLOR_BLACK;
+      _textColor = Graphics.COLOR_WHITE;     
+    } else {
+      _textColor = Graphics.COLOR_BLACK;
+      _backColor = Graphics.COLOR_WHITE;      
+    }
   }
 
   //! Update the view
   //! @param dc Device context
   function onUpdate(dc as Dc) as Void {
     dc.clearClip();
-    dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+    dc.setColor(_backColor, _backColor);
     dc.clear();
-    dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+    dc.setColor(_textColor, Graphics.COLOR_TRANSPARENT);
 
     var mySettings = System.getDeviceSettings();
     var version = mySettings.monkeyVersion;
@@ -29,7 +46,7 @@ class DataFieldSettingsView extends WatchUi.View {
       dc.getWidth() / 2,
       dc.getHeight() / 2 - 30,
       Graphics.FONT_SMALL,
-      "Press Menu \nfor settings \nCIQ " + versionString,
+      "Press Menu\nfor settings\nCIQ " + versionString,
       Graphics.TEXT_JUSTIFY_CENTER
     );
   }
