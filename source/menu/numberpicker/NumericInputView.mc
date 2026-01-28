@@ -2,6 +2,7 @@
 // substring null -> .length()
 // v2024-06-11 fix num of items edge 840
 // v2025-11-19 option to use menu buttons
+// v2025-11-23 fix [Lang.Number, Lang.Number] + remove debug (breaking change NumericInputDelegate initialize)
 
 import Toybox.Graphics;
 import Toybox.Lang;
@@ -16,8 +17,6 @@ class NumericInputView extends WatchUi.View {
   hidden var _insert as Boolean = true;
   hidden var _negative as Boolean = false;
   hidden var _nrOfItemsInRow as Number = 4;
-  hidden var _debug as Boolean = false;
-  hidden var _debugInfo as String = "";
 
   hidden var _keyCoord as Lang.Array<Lang.Array<Lang.Number> > =
     [[]] as Lang.Array<Lang.Array<Lang.Number> >;
@@ -229,12 +228,9 @@ class NumericInputView extends WatchUi.View {
     drawTopInfo(dc, y);
     y = (y + 3 * _lineHeight).toNumber();
     
-    drawKeyPad(dc, y, _keys, _controls);
-    
-    if (_debug) {
-      drawInfoPanel(dc);
-    }
+    drawKeyPad(dc, y, _keys, _controls);   
   }
+
   hidden function buildEditedValue(
     value as Numeric,
     format as String
@@ -359,42 +355,42 @@ class NumericInputView extends WatchUi.View {
     );
   }
 
-  hidden function drawInfoPanel(dc as Dc) as Void {
-    var x = 1;
-    var width = dc.getWidth();
-    var height = 1 * _lineHeight;
-    var y = dc.getHeight() - height;
+  // hidden function drawInfoPanel(dc as Dc) as Void {
+  //   var x = 1;
+  //   var width = dc.getWidth();
+  //   var height = 1 * _lineHeight;
+  //   var y = dc.getHeight() - height;
     
-    dc.setColor(_textColor, Graphics.COLOR_TRANSPARENT);
+  //   dc.setColor(_textColor, Graphics.COLOR_TRANSPARENT);
 
-    dc.drawText(
-      dc.getWidth() / 2,
-      dc.getHeight() - _lineHeight,
-      Graphics.FONT_TINY,
-      _debugInfo,
-      Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
-    );
-    dc.clearClip();
-  }
+  //   dc.drawText(
+  //     dc.getWidth() / 2,
+  //     dc.getHeight() - _lineHeight,
+  //     Graphics.FONT_TINY,
+  //     _debugInfo,
+  //     Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
+  //   );
+  //   dc.clearClip();
+  // }
 
   //! Called when this View is removed from the screen. Save the
   //! state of your app here.
   function onHide() as Void {}
 
-  function setDebugInfo(
-    event as String,
-    coord as Lang.Array<Lang.Number>
-  ) as Void {
-    var keyValue = getKeyPressed(coord);
-    _debugInfo = Lang.format("Event[$1$] Coord[$2$,$3$] Key:[$4$]", [
-      event,
-      coord[0],
-      coord[1],
-      keyValue,
-    ]);
-  }
+  // function setDebugInfo(
+  //   event as String,
+  //   coord as Lang.Array<Lang.Number>
+  // ) as Void {
+  //   var keyValue = getKeyPressed(coord);
+  //   _debugInfo = Lang.format("Event[$1$] Coord[$2$,$3$] Key:[$4$]", [
+  //     event,
+  //     coord[0],
+  //     coord[1],
+  //     keyValue,
+  //   ]);
+  // }
 
-  function onKeyPressed(coord as Lang.Array<Lang.Number>) as Boolean {
+  function onKeyPressed(coord as [Lang.Number, Lang.Number]) as Boolean {
     var keyValue = getKeyPressed(coord);
     onKey(keyValue);
     return true;
@@ -519,10 +515,7 @@ class NumericInputView extends WatchUi.View {
     }
 
     _currentValue = buildCurrentValue(_editData);
-
-    //if (_debug) {
-    refreshUi();
-    //}
+    refreshUi();    
   }
 
   hidden function addKey(key as String, insert as Boolean) as Void {
@@ -567,7 +560,7 @@ class NumericInputView extends WatchUi.View {
   //   _clickType = clickType;
   // }
 
-  function getKeyPressed(coord as Lang.Array<Lang.Number>) as String {
+  function getKeyPressed(coord as [Lang.Number, Lang.Number]) as String {
     var x = coord[0] as Number;
     var y = coord[1] as Number;
     // Double try/catch fix for bug Value may not be initialized.

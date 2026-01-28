@@ -488,7 +488,8 @@ class SettledView extends WatchUi.DataField {
       return;
     }
     if ($.gBacklight_at_night) {
-      if (!isAtNightTime(Time.now(), true)) {
+      // Check x seconds in the future to see if its going dark      
+      if (!isAtNightTime(Time.now().add($.gBacklight_nite_switch_seconds), true)) {
         return;
       }
     }

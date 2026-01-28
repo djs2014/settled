@@ -155,6 +155,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("tail_nightlight_mode", [0, 0, 6, 5, 15, 0, 0, -1]);
         Storage.setValue("other_nightlight_mode", [0, 0, 6, 7, 15, 0, 0 - 1]);
         Storage.setValue("sunevent_degrees_difference", 1.0d);
+        Storage.setValue("day_nite_switch_seconds", 300);
 
         Storage.setValue("alert_no_network", true);
         Storage.setValue("alert_no_phone", true);
@@ -166,6 +167,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("backlight_on", false);
         Storage.setValue("backlight_on_alerts", false);
         Storage.setValue("backlight_at_night", true);
+        Storage.setValue("backlight_nite_switch_seconds", 300);
         Storage.setValue("backlight_on_sec", 0);
         Storage.setValue("backlight_on_meters", 1000);
 
@@ -322,9 +324,15 @@ class SettledApp extends Application.AppBase {
       $.gBacklight_on_meters =
         $.getStorageValue("backlight_on_alerts", $.gBacklight_on_meters) as
         Number;
+      // only at night  
       $.gBacklight_at_night =
         $.getStorageValue("backlight_at_night", $.gBacklight_at_night) as
         Boolean;
+
+      var bl2nSeconds =
+        $.getStorageValue("backlight_nite_switch_seconds", 300) as Number;
+      $.gBacklight_nite_switch_seconds = new Time.Duration(bl2nSeconds);
+
       $.gBacklight_on_sec =
         $.getStorageValue("backlight_on_sec", $.gBacklight_on_sec) as Number;
       $.gBacklight_on_meters =
@@ -485,6 +493,7 @@ var gBacklight_on_alerts as Boolean = false;
 var gBacklight_at_night as Boolean = true;
 var gBacklight_on_sec as Number = 0;
 var gBacklight_on_meters as Number = 1000;
+var gBacklight_nite_switch_seconds as Time.Duration = new Time.Duration(300);
 
 // The back light on the bike
 var gBrakelight_on as Boolean = true;

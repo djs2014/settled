@@ -187,7 +187,17 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         )
       );
 
+      // Seconds before sunset the night switch is triggered
       var mi = new WatchUi.MenuItem(
+        "Before sunset|0~3600 (sec)",
+        null,
+        "backlight_nite_switch_seconds",
+        null
+      );
+      mi.setSubLabel($.getStorageNumberAsString(mi.getId() as String) + " sec");
+      blightMenu.addItem(mi);
+
+      mi = new WatchUi.MenuItem(
         "Trigger after| (seconds)",
         null,
         "backlight_on_sec",
@@ -554,7 +564,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
 
       // Seconds before sunset or after sunrise the day/night switch is triggered
       var mi = new WatchUi.MenuItem(
-        "Start before/after |0~3600 (sec)",
+        "Before sunset/after sunrise|0~3600 (sec)",
         null,
         "day_nite_switch_seconds",
         null
@@ -727,7 +737,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     Toybox.WatchUi.pushView(
       view,
-      new $.NumericInputDelegate(_debug, view),
+      new $.NumericInputDelegate( view),
       WatchUi.SLIDE_RIGHT
     );
   }
@@ -762,7 +772,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     Toybox.WatchUi.pushView(
       view,
-      new $.NumericInputDelegate(_debug, view),
+      new $.NumericInputDelegate( view),
       WatchUi.SLIDE_IMMEDIATE
     );
   }
