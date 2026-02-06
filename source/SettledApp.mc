@@ -157,6 +157,8 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("sunevent_degrees_difference", 1.0d);
         Storage.setValue("day_nite_switch_seconds", 300);
 
+        Storage.setValue("tail_nightlight_enabled", true);
+
         Storage.setValue("alert_no_network", true);
         Storage.setValue("alert_no_phone", true);
         Storage.setValue("alert_no_phone_sec", 3);
@@ -169,7 +171,7 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("backlight_at_night", true);
         Storage.setValue("backlight_nite_switch_seconds", 300);
         Storage.setValue("backlight_on_sec", 0);
-        Storage.setValue("backlight_on_meters", 1000);
+        Storage.setValue("backlight_on_meters", 200);
 
         Storage.setValue("brakelight_on", true);
         Storage.setValue("brakelight_minimal_speed", 5.0f);
