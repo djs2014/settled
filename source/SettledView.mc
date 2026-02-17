@@ -482,16 +482,61 @@ class SettledView extends WatchUi.DataField {
     turnBacklightOn();
   }
 
+  // true night time, false day time
+  function weAreAtNightTime(delayed as Time.Duration) as Boolean {
+    if (isAtNightTime(Time.now(), false)) {
+      // Its night time  
+      //System.println(["Is at night 1"]);    
+      return true;
+    }
+    // Its Day time now, check if its night time in the future or was night time in the past depending on offset
+
+    if (delayed.value() == 0) {
+      // Its day time
+      //System.println(["Is at day 1"]);
+      return false;
+    }
+
+    // Check x seconds in the future to see if its going dark
+    if (isAtNightTime(Time.now().add(delayed), false)) {
+      // Its night time
+      //System.println(["Is at night 2"]);
+      return true;
+    }
+    // Check x seconds in the past to see if it was dark
+    if (isAtNightTime(Time.now().subtract(delayed), false)) {
+      // Its night time
+      //System.println(["Is at night 3"]);
+      return true;
+    }
+    // Its day time
+    //System.println(["Is at day 2"]);
+    return false;
+  }
+
   // Back light of the device
   function processBackLightTrigger(elapsedDistance as Number) as Void {
     if (!$.gBacklight_on) {
       return;
     }
     if ($.gBacklight_at_night) {
-      // Check x seconds in the future to see if its going dark      
-      if (!isAtNightTime(Time.now().add($.gBacklight_nite_switch_seconds), true)) {
+      // Only process when its nighttime
+      if (!weAreAtNightTime(
+        $.gBacklight_nite_switch_seconds as Time.Duration
+      )) {
         return;
       }
+      // if (isAtNightTime(Time.now(), false)) {
+      //   // If its already night, turn it on
+      // } else {
+      //   // If its daylight now,
+      //   // Check x seconds in the future to see if its going dark
+      //   if (
+      //     !isAtNightTime(Time.now().add($.gBacklight_nite_switch_seconds), true)
+      //   ) {
+      //     return;
+      //   }
+      // }
     }
 
     if ($.gBacklight_on_sec == 0) {
@@ -734,9 +779,9 @@ class SettledView extends WatchUi.DataField {
     }
 
     if ($.gRadar_enabled && $.gRadar_show_battery && mRadarBatteryLevel > -1) {
-      drawBatteryLevel(dc, 1,1, 25, 10, mRadarBatteryLevel);
+      drawBatteryLevel(dc, 1, 1, 25, 10, mRadarBatteryLevel);
     }
-    
+
     // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
     //   dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
     //   text = "#" + mBrakelightCounter.format("%d");
