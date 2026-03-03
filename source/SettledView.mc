@@ -482,11 +482,13 @@ class SettledView extends WatchUi.DataField {
     turnBacklightOn();
   }
 
+  // TODO, if duration is <0,
+  //
   // true night time, false day time
   function weAreAtNightTime(delayed as Time.Duration) as Boolean {
     if (isAtNightTime(Time.now(), false)) {
-      // Its night time  
-      //System.println(["Is at night 1"]);    
+      // Its night time
+      //System.println(["Is at night 1"]);
       return true;
     }
     // Its Day time now, check if its night time in the future or was night time in the past depending on offset
@@ -521,9 +523,9 @@ class SettledView extends WatchUi.DataField {
     }
     if ($.gBacklight_at_night) {
       // Only process when its nighttime
-      if (!weAreAtNightTime(
-        $.gBacklight_nite_switch_seconds as Time.Duration
-      )) {
+      if (
+        !weAreAtNightTime($.gBacklight_nite_switch_seconds as Time.Duration)
+      ) {
         return;
       }
       // if (isAtNightTime(Time.now(), false)) {
@@ -777,9 +779,9 @@ class SettledView extends WatchUi.DataField {
       dc.drawRectangle(0, 0, width, height);
       dc.setPenWidth(1);
     }
-
+   
     if ($.gRadar_enabled && $.gRadar_show_battery && mRadarBatteryLevel > -1) {
-      drawBatteryLevel(dc, 1, 1, 25, 10, mRadarBatteryLevel);
+      drawBatteryLevel(dc, 1, 1, 30, 10, mRadarBatteryLevel);
     }
 
     // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
@@ -1101,24 +1103,33 @@ class SettledView extends WatchUi.DataField {
       return;
     }
 
-    var m = 2;
-    var w = 17;
-    var h = 7;
-    var x1 = x + width - w - m;
-    var y1 = y + 1 + m;
+    var topMargin = 2;
+    var barWidth = 4;
+    var barHeight = height - 2; // Inner height
+    var barSpacing = 1;
+    var startX = x + 2;
 
-    if (batteryLevel >= 4) {
-      dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-    } else if (batteryLevel >= 3) {
-      dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_TRANSPARENT);
+    // Filled color
+    if (batteryLevel >= 3) {
+      dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
+    } else if (batteryLevel == 2) {
+      dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_BLACK);
     } else {
-      dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+      dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
     }
-    dc.drawRoundedRectangle(x1, y1, w, h, 2);
-    dc.fillRectangle(x1 - 1, y1 + h / 2 - 2, 2, 4);
-    for (var i = 0; i < batteryLevel; i++) {
-      dc.fillRectangle(x1 + w - 1 - (i + 1) * 3, y1 + 1, 2, 5);
+
+    dc.setPenWidth(1);
+    for (var i = 1; i <= 5; ++i) {
+      var barX = startX + (i - 1) * (barWidth + barSpacing);
+      if (i <= batteryLevel) {
+        // dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK); 
+        dc.fillRectangle(barX, y + topMargin, barWidth, barHeight);
+      } else {
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT); // Empty outline
+        dc.drawRectangle(barX, y + topMargin, barWidth, barHeight);
+      }
     }
+    
   }
 
   hidden function getBatteryLevel(

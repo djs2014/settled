@@ -2,9 +2,11 @@ daylight offset
  - also for backlight turn on
  $.gDay_nite_switch_seconds
  backlight_nite_switch_seconds
- 
+
+show battery bigger on edge *50  
 show battery radar horiz/vertical?
 on which batterylevel to show
+
 
 fallback field  / when paused -> di gear == 0 -> show other data etc.
 
