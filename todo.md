@@ -1,3 +1,5 @@
+update bikelight info per second
+
 daylight offset
  - also for backlight turn on
  $.gDay_nite_switch_seconds
