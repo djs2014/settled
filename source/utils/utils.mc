@@ -13,7 +13,11 @@ const FEET = 3.281;
 var gCreateColors as Boolean = false;
 var gUseSetFillStroke as Boolean = false;
 
-function getActivityValue(info as Activity.Info?, symbol as Symbol, dflt as Lang.Object) as Lang.Object {
+function getActivityValue(
+  info as Activity.Info?,
+  symbol as Symbol,
+  dflt as Lang.Object
+) as Lang.Object {
   if (info == null) {
     return dflt;
   }
@@ -27,14 +31,31 @@ function getActivityValue(info as Activity.Info?, symbol as Symbol, dflt as Lang
   return dflt;
 }
 
+// Note key contains `storageKey|index` or `storageKey`
 function getStorageValue(
   key as Application.PropertyKeyType,
   dflt as Application.PropertyValueType
 ) as Application.PropertyValueType {
   try {
-    var val = Toybox.Application.Storage.getValue(key);
-    if (val != null) {
-      return val;
+    // Check if key contains index (for array)
+    var idx = stringRight(key, "|", "").toNumber();
+    System.println(["getStorageValue idx", idx]);
+    if (idx == null || idx == "") {
+      var val = Toybox.Application.Storage.getValue(key);
+      if (val != null) {
+        return val;
+      }
+      return dflt;
+    }
+
+    // Get the value from the stored array
+    var storageKey = stringLeft(key, "|", key);
+    System.println(["getStorageValue storageKey", storageKey]);
+    var array = Toybox.Application.Storage.getValue(storageKey);
+    if (array != null) {
+      if (idx > -1 && idx < array.size()) {
+        return array[idx];
+      }
     }
   } catch (ex) {
     return dflt;
@@ -42,18 +63,82 @@ function getStorageValue(
   return dflt;
 }
 
-function percentageOf(value as Numeric?, max as Numeric?) as Numeric {
+// Save a number value in array and save to storage
+// Note key contains `storageKey|index` or `storageKey`
+function setStorageValueOrArray(
+  key as String,
+  value as Application.PropertyValueType
+) as Void {
+  if (key == "") {
+    return;
+  }
+
+  // Extract selected storage key and index
+  var storageKey = stringLeft(key, "|", key);
+  var idx = stringRight(key, "|", "").toNumber();
+  System.println(["setStorageValueOrArray storageKey|idx", storageKey, idx]);
+  if (idx == null || idx == "") {
+    Storage.setValue(storageKey, value);
+    return;
+  }
+
+  System.println(["setStorageValueArray:", storageKey, idx, value]);
+
+  // Get current array
+  var array =
+    getStorageValue(storageKey, []) as Array<Application.PropertyValueType>;
+  if (idx > -1 && idx < array.size()) {
+    // Update array
+    array[idx] = value;
+    Storage.setValue(
+      storageKey,
+      array //as Lang.Array<Application.PropertyValueType>
+    );
+  }
+}
+
+// Objects are passed by reference
+function ensureArraySize(
+  array as Array<Application.PropertyValueType>,
+  size as Number,
+  value as Application.PropertyValueType
+) as Boolean {
+  var changed = false;
+  while (array.size() < size) {
+    array.add(value);
+    changed = true;
+  }
+  return changed;
+}
+
+// Given min and max value, calculate the perc of value in this range.
+function percentageOf(
+  value as Numeric?,
+  min as Numeric,
+  max as Numeric?
+) as Numeric {
   if (value == null || max == null) {
     return 0.0f;
   }
+
   if (max <= 0) {
     return 0.0f;
   }
-  return value / (max / 100.0);
+  var calculatedValue = value - min;
+  var calculatedMax = max - min;
+  if (calculatedMax <= 0) {
+    // min should be smaller than max
+    return 0.0f;
+  }
+
+  return calculatedValue / (calculatedMax / 100.0);
 }
 
-function percentageDifference(valueA as Numeric?, valueB as Numeric?) as Numeric {
-  if (valueA == null || valueB == null ) {
+function percentageDifference(
+  valueA as Numeric?,
+  valueB as Numeric?
+) as Numeric {
+  if (valueA == null || valueB == null) {
     return 0.0f;
   }
 
@@ -326,11 +411,19 @@ function percentageToColor(
     green = green - (green / 100) * darker;
     blue = blue - (blue / 100) * darker;
   }
-  return Graphics.createColor(alpha, red.toNumber(), green.toNumber(), blue.toNumber());
+  return Graphics.createColor(
+    alpha,
+    red.toNumber(),
+    green.toNumber(),
+    blue.toNumber()
+  );
 }
 
 // template: "{h}:{m}:{s}:{ms}"
-function millisecondsToShortTimeString(totalMilliSeconds as Number, template as String) as String {
+function millisecondsToShortTimeString(
+  totalMilliSeconds as Number,
+  template as String
+) as String {
   if (totalMilliSeconds != null && totalMilliSeconds instanceof Lang.Number) {
     var hours = (totalMilliSeconds / (1000.0 * 60 * 60)).toNumber() % 24;
     var minutes = (totalMilliSeconds / (1000.0 * 60.0)).toNumber() % 60;
@@ -351,7 +444,10 @@ function millisecondsToShortTimeString(totalMilliSeconds as Number, template as 
 }
 
 // 1:40 or 150:40
-function secondsToCompactTimeString(totalSeconds as Number, template as String) as String {
+function secondsToCompactTimeString(
+  totalSeconds as Number,
+  template as String
+) as String {
   if (totalSeconds != null && totalSeconds instanceof Lang.Number) {
     var minutes = (totalSeconds / 60.0).toNumber();
     var seconds = totalSeconds.toNumber() % 60;
@@ -378,7 +474,11 @@ function secondsToHourMinutes(totalSeconds as Number) as String {
   return "";
 }
 
-function stringReplace(str as String, oldString as String, newString as String) as String {
+function stringReplace(
+  str as String,
+  oldString as String,
+  newString as String
+) as String {
   //str = str.toString(); // @@ TODO why crash here? -> because of too many nested function calls?
   if (str.length() == 0 || oldString.length() == 0) {
     return str;
@@ -389,7 +489,10 @@ function stringReplace(str as String, oldString as String, newString as String) 
   var count = 0;
   while (index != null && count < 30) {
     var indexEnd = index + oldString.length();
-    var res = result.substring(0, index) + newString + result.substring(indexEnd, result.length());
+    var res =
+      result.substring(0, index) +
+      newString +
+      result.substring(indexEnd, result.length());
     result = res;
     index = result.find(oldString);
     count = count + 1;
@@ -410,7 +513,11 @@ function stringLeft(str as String, marker as String, dflt as String) as String {
   return str.substring(0, index) as String;
 }
 
-function stringRight(str as String, marker as String, dflt as String) as String {
+function stringRight(
+  str as String,
+  marker as String,
+  dflt as String
+) as String {
   if (str.length() == 0 || marker.length() == 0) {
     return dflt;
   }
@@ -422,11 +529,21 @@ function stringRight(str as String, marker as String, dflt as String) as String 
   return str.substring(index + 1, str.length()) as String;
 }
 
-function pointOnCircle_x(x as Number, y as Number, radius as Number, angleInDegrees as Number) as Number {
+function pointOnCircle_x(
+  x as Number,
+  y as Number,
+  radius as Number,
+  angleInDegrees as Number
+) as Number {
   // Convert from degrees to radians
   return (radius * Math.cos(deg2rad(angleInDegrees)) + x).toNumber();
 }
-function pointOnCircle_y(x as Number, y as Number, radius as Number, angleInDegrees as Number) as Number {
+function pointOnCircle_y(
+  x as Number,
+  y as Number,
+  radius as Number,
+  angleInDegrees as Number
+) as Number {
   // Convert from degrees to radians
   return (radius * Math.sin(deg2rad(angleInDegrees)) + y).toNumber();
 }
@@ -443,13 +560,31 @@ function hasRequiredCIQVersion(requiredVersion as String) as Boolean {
     return versionString.compareTo(requiredVersion) >= 0;
   } else {
     return false;
-  }  
+  }
 }
 
 function getShortTimeString(moment as Time.Moment?) as String {
   if (moment != null && moment instanceof Time.Moment) {
     var date = Gregorian.info(moment, Time.FORMAT_SHORT);
     return date.hour.format("%02d") + ":" + date.min.format("%02d");
+  }
+  return "";
+}
+
+function getLongTimeString(moment as Time.Moment?) as String {
+  if (moment != null && moment instanceof Time.Moment) {
+    var date = Gregorian.info(moment, Time.FORMAT_SHORT);
+    return (
+      date.day.format("%02d") +
+      "-" +
+      date.month.format("%02d") +
+      "-" +
+      date.year.format("%02d") +
+      " " +
+      date.hour.format("%02d") +
+      ":" +
+      date.min.format("%02d")
+    );
   }
   return "";
 }

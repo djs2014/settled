@@ -73,8 +73,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mUseFontsNumbers as Boolean = true;
   hidden var mActivityNeverHappened as Boolean = true;
 
-  hidden var mLat as Double = 0d;
-  hidden var mLon as Double = 0d;
+  hidden var mSunrise as Time.Moment?;
+  hidden var mSunset as Time.Moment?;
   hidden var mCurrentLocation as CurrentLocation;
   hidden var mBackLightSeconds as Number = -1;
   hidden var mBackLightMeters as Number = -1;
@@ -86,6 +86,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mBrakelightDemoCountdown as Number = 0;
   hidden var mHasTaillight as Boolean = false;
   // hidden var mBrakelightCounter as Number = 0;
+
+  hidden var mRadarBatteryLevel as Number = -1;
 
   function initialize() {
     DataField.initialize();
@@ -114,12 +116,40 @@ class SettledView extends WatchUi.DataField {
     }
 
     mCurrentLocation = new CurrentLocation();
-    mCurrentLocation.setOnLocationChanged(self, :onLocationChanged);
+    // Changes in setting only after restart of the app!
+    mCurrentLocation.setMinDegreesDifferenceSunevent(
+      $.gSunEventDegreesDifference
+    );
+
+    mCurrentLocation.setOnSunEventChanged(self, :onSunEventChanged);
   }
 
-  function onLocationChanged(degrees as Array<Double>) as Void {
-    mLat = degrees[0];
-    mLon = degrees[1];
+  function onSunEventChanged(sunrise as Moment?, sunset as Moment?) {
+    mSunrise = sunrise;
+    mSunset = sunset;
+  }
+
+  function isAtNightTime(time as Moment, defValue as Boolean) as Boolean {
+    if (mSunrise == null || mSunset == null) {
+      return defValue;
+    }
+
+    var nightTime =
+      time.value() < (mSunrise as Moment).value() ||
+      (mSunset as Moment).value() <= time.value();
+
+    // System.println([
+    //   "IsNightTime:",
+    //   nightTime.toString(),
+    //   "Sunrise:",
+    //   $.getLongTimeString(mSunrise),
+    //   " sunset:",
+    //   $.getLongTimeString(mSunset),
+    //   " when:",
+    //   $.getLongTimeString(time),
+    // ]);
+
+    return nightTime;
   }
 
   function onLayout(dc as Dc) as Void {
@@ -146,66 +176,128 @@ class SettledView extends WatchUi.DataField {
     }
   }
 
+  hidden function getValidLightModes(
+    dayModes as Array<Number>,
+    niteEnabled as Boolean,
+    niteModes as Array<Number>
+  ) as Array<Number> {
+    if (!niteEnabled) {
+      return dayModes;
+    }
+
+    if (isAtNightTime(Time.now(), false)) {
+      // System.println(["Is at nighttime 1"]);
+      return niteModes;
+    }
+
+    // If its Daytime now.
+    // Check x seconds in the future to see if its going dark
+    if (isAtNightTime(Time.now().add($.gDay_nite_switch_seconds), false)) {
+      // It will be night in d2nseconds, lets turn on niteModes
+      // System.println(["Is at nighttime 2 +", $.gDay_nite_switch_seconds]);
+      return niteModes;
+    }
+
+    // Check x seconds in the past to see if it was dark
+    if (isAtNightTime(Time.now().subtract($.gDay_nite_switch_seconds), false)) {
+      // It was night in d2nseconds ago, so probably not light enough to turn on dayModes
+      // System.println(["Is at nighttime 3 -", $.gDay_nite_switch_seconds]);
+      return niteModes;
+    }
+
+    // System.println(["Is at daytime"]);
+    return dayModes;
+  }
+
   function compute(info as Activity.Info) as Void {
+    var test = getValidLightModes([], true, []);
+
     var speed = $.getActivityValue(info, :currentSpeed, 0.0f) as Float;
 
-    mTimerState = $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as Activity.TimerState;
+    mTimerState =
+      $.getActivityValue(info, :timerState, Activity.TIMER_STATE_OFF) as
+      Activity.TimerState;
     if ($.gtest_TimerState > -1) {
       mTimerState = $.gtest_TimerState as Activity.TimerState;
     }
     mActivityNeverHappened = mTimerState == Activity.TIMER_STATE_OFF;
 
-    mHeadLightMode = $.gHead_light_mode[mTimerState as Number] as Number;
-    mTailLightMode = $.gTail_light_mode[mTimerState as Number] as Number;
-    mOtherLightMode = $.gOther_light_mode[mTimerState as Number] as Number;
+    var head_light_mode = getValidLightModes(
+      $.gHead_light_mode,
+      $.gHead_nightlight_enabled,
+      $.gHead_nightlight_mode
+    );
+    var tail_light_mode = getValidLightModes(
+      $.gTail_light_mode,
+      $.gTail_nightlight_enabled,
+      $.gTail_nightlight_mode
+    );
+    var other_light_mode = getValidLightModes(
+      $.gOther_light_mode,
+      $.gOther_nightlight_enabled,
+      $.gOther_nightlight_mode
+    );
+
+    mHeadLightMode = head_light_mode[mTimerState as Number] as Number;
+    mTailLightMode = tail_light_mode[mTimerState as Number] as Number;
+    mOtherLightMode = other_light_mode[mTimerState as Number] as Number;
 
     // When paused, count down then optional change mode
     var mode = -1;
-    var maxHeadLightSecInPause = $.gHead_light_mode[$.gIdxPauseSec] as Number;
-    mHeadLightCounter = processPauseCounter(maxHeadLightSecInPause, mHeadLightCounter);
+    var maxHeadLightSecInPause = head_light_mode[$.gIdxPauseSec] as Number;
+    mHeadLightCounter = processPauseCounter(
+      maxHeadLightSecInPause,
+      mHeadLightCounter
+    );
     if (mHeadLightCounter == 0) {
-      mode = $.gHead_light_mode[$.gIdxPauseMode] as Number;
+      mode = head_light_mode[$.gIdxPauseMode] as Number;
       if (mode > -1) {
         mHeadLightMode = mode;
       }
     }
-    var maxTailLightSecInPause = $.gTail_light_mode[$.gIdxPauseSec] as Number;
-    mTailLightCounter = processPauseCounter(maxTailLightSecInPause, mTailLightCounter);
+    var maxTailLightSecInPause = tail_light_mode[$.gIdxPauseSec] as Number;
+    mTailLightCounter = processPauseCounter(
+      maxTailLightSecInPause,
+      mTailLightCounter
+    );
     if (mTailLightCounter == 0) {
-      mode = $.gTail_light_mode[$.gIdxPauseMode] as Number;
+      mode = tail_light_mode[$.gIdxPauseMode] as Number;
       if (mode > -1) {
         mTailLightMode = mode;
       }
     }
-    var maxOtherLightSecInPause = $.gOther_light_mode[$.gIdxPauseSec] as Number;
-    mOtherLightCounter = processPauseCounter(maxOtherLightSecInPause, mOtherLightCounter);
+    var maxOtherLightSecInPause = other_light_mode[$.gIdxPauseSec] as Number;
+    mOtherLightCounter = processPauseCounter(
+      maxOtherLightSecInPause,
+      mOtherLightCounter
+    );
     if (mOtherLightCounter == 0) {
-      mode = $.gOther_light_mode[$.gIdxPauseMode] as Number;
+      mode = other_light_mode[$.gIdxPauseMode] as Number;
       if (mode > -1) {
         mOtherLightMode = mode;
       }
     }
 
-    // Solar intensity
+    // Solar intensity (is disabled in nitemode)
     if (mSolarIntensity >= -1) {
       var solarIntensity = 0;
-      var solarMode = $.gHead_light_mode[$.gIdxSolarMode] as Number;
+      var solarMode = head_light_mode[$.gIdxSolarMode] as Number;
       if (solarMode > -1) {
-        solarIntensity = $.gHead_light_mode[$.gIdxSolarIntensity] as Number;
+        solarIntensity = head_light_mode[$.gIdxSolarIntensity] as Number;
         if (mSolarIntensity <= solarIntensity) {
           mHeadLightMode = solarMode;
         }
       }
-      solarMode = $.gTail_light_mode[$.gIdxSolarMode] as Number;
+      solarMode = tail_light_mode[$.gIdxSolarMode] as Number;
       if (solarMode > -1) {
-        solarIntensity = $.gTail_light_mode[$.gIdxSolarIntensity] as Number;
+        solarIntensity = tail_light_mode[$.gIdxSolarIntensity] as Number;
         if (mSolarIntensity <= solarIntensity) {
           mTailLightMode = solarMode;
         }
       }
-      solarMode = $.gOther_light_mode[$.gIdxSolarMode] as Number;
+      solarMode = other_light_mode[$.gIdxSolarMode] as Number;
       if (solarMode > -1) {
-        solarIntensity = $.gOther_light_mode[$.gIdxSolarIntensity] as Number;
+        solarIntensity = other_light_mode[$.gIdxSolarIntensity] as Number;
         if (mSolarIntensity <= solarIntensity) {
           mOtherLightMode = solarMode;
         }
@@ -214,7 +306,7 @@ class SettledView extends WatchUi.DataField {
 
     if ($.gBrakelight_on && $.gBrakelight_demo && mHasTaillight) {
       // For demo assume activity on
-      mTailLightMode = $.gTail_light_mode[Activity.TIMER_STATE_ON] as Number;
+      mTailLightMode = tail_light_mode[Activity.TIMER_STATE_ON] as Number;
       if (mBrakelightDemoCountdown <= 0) {
         mBrakelightDemoCountdown = 3; // 3 sec per demo speed
         mBrakelightDemoIdx = mBrakelightDemoIdx + 1;
@@ -224,7 +316,9 @@ class SettledView extends WatchUi.DataField {
 
       if (mBrakelightDemoIdx < $.gBrakelight_demo_data.size()) {
         // There is test data
-        speed = $.kmPerHourToMeterPerSecond($.gBrakelight_demo_data[mBrakelightDemoIdx]);
+        speed = $.kmPerHourToMeterPerSecond(
+          $.gBrakelight_demo_data[mBrakelightDemoIdx]
+        );
       } else {
         // Stop demo
         $.gBrakelight_demo = false;
@@ -239,7 +333,11 @@ class SettledView extends WatchUi.DataField {
     // Brake light, when speed drops % in 1 second (onCompute interval)
     // TODO check/test when speed high and brake till speed < minimal_mps ->
     mBrakelightBorder = 0;
-    if ($.gBrakelight_on && (speed > $.gBrakelight_minimal_mps || mPreviousSpeed > $.gBrakelight_minimal_mps)) {
+    if (
+      $.gBrakelight_on &&
+      (speed > $.gBrakelight_minimal_mps ||
+        mPreviousSpeed > $.gBrakelight_minimal_mps)
+    ) {
       // System.println("percdiff " + $.percentageDifference(speed, mPreviousSpeed));
       if (speed < mPreviousSpeed && mPreviousSpeed > 0.0f && speed > 0.0f) {
         var percDiff = $.percentageDifference(speed, mPreviousSpeed);
@@ -247,7 +345,10 @@ class SettledView extends WatchUi.DataField {
           mTailLightMode = $.gbrakelight_mode_1;
           mBrakelightBorder = $.gBrakelight_border;
           // mBrakelightCounter = mBrakelightCounter + 1; doesnt work this way
-        } else if (percDiff >= $.gBrakelight_on_perc_0 && $.gbrakelight_mode_0 > 0) {
+        } else if (
+          percDiff >= $.gBrakelight_on_perc_0 &&
+          $.gbrakelight_mode_0 > 0
+        ) {
           mTailLightMode = $.gbrakelight_mode_0;
           mBrakelightBorder = $.gBrakelight_border;
           // mBrakelightCounter = mBrakelightCounter + 1;
@@ -346,7 +447,8 @@ class SettledView extends WatchUi.DataField {
     }
 
     mCurrentLocation.onCompute(info);
-    var elapsedDistance = $.getActivityValue(info, :elapsedDistance, 0.0f) as Float;
+    var elapsedDistance =
+      $.getActivityValue(info, :elapsedDistance, 0.0f) as Float;
     processBackLightTrigger(elapsedDistance.toNumber());
   }
 
@@ -379,14 +481,64 @@ class SettledView extends WatchUi.DataField {
     }
     turnBacklightOn();
   }
+
+  // TODO, if duration is <0,
+  //
+  // true night time, false day time
+  function weAreAtNightTime(delayed as Time.Duration) as Boolean {
+    if (isAtNightTime(Time.now(), false)) {
+      // Its night time
+      //System.println(["Is at night 1"]);
+      return true;
+    }
+    // Its Day time now, check if its night time in the future or was night time in the past depending on offset
+
+    if (delayed.value() == 0) {
+      // Its day time
+      //System.println(["Is at day 1"]);
+      return false;
+    }
+
+    // Check x seconds in the future to see if its going dark
+    if (isAtNightTime(Time.now().add(delayed), false)) {
+      // Its night time
+      //System.println(["Is at night 2"]);
+      return true;
+    }
+    // Check x seconds in the past to see if it was dark
+    if (isAtNightTime(Time.now().subtract(delayed), false)) {
+      // Its night time
+      //System.println(["Is at night 3"]);
+      return true;
+    }
+    // Its day time
+    //System.println(["Is at day 2"]);
+    return false;
+  }
+
+  // Back light of the device
   function processBackLightTrigger(elapsedDistance as Number) as Void {
     if (!$.gBacklight_on) {
       return;
     }
     if ($.gBacklight_at_night) {
-      if (mCurrentLocation.isAtDaylightTime(Time.now(), true)) {
+      // Only process when its nighttime
+      if (
+        !weAreAtNightTime($.gBacklight_nite_switch_seconds as Time.Duration)
+      ) {
         return;
       }
+      // if (isAtNightTime(Time.now(), false)) {
+      //   // If its already night, turn it on
+      // } else {
+      //   // If its daylight now,
+      //   // Check x seconds in the future to see if its going dark
+      //   if (
+      //     !isAtNightTime(Time.now().add($.gBacklight_nite_switch_seconds), true)
+      //   ) {
+      //     return;
+      //   }
+      // }
     }
 
     if ($.gBacklight_on_sec == 0) {
@@ -429,7 +581,10 @@ class SettledView extends WatchUi.DataField {
   // }
 
   // When paused, countdown then optional change mode
-  function processPauseCounter(maxSecondsPaused as Number, counter as Number) as Number {
+  function processPauseCounter(
+    maxSecondsPaused as Number,
+    counter as Number
+  ) as Number {
     if (mTimerState != Activity.TIMER_STATE_PAUSED || maxSecondsPaused <= 0) {
       return maxSecondsPaused;
     }
@@ -506,9 +661,16 @@ class SettledView extends WatchUi.DataField {
     if ($.gShow_label && mActivityPauzed) {
       var label = $.getDisplayText($.gDisplay_field);
       if (label.length() > 0) {
-        var fontLabel = $.getMatchingFont(dc, mFontsLabel, width, height, label) as FontType;
+        var fontLabel =
+          $.getMatchingFont(dc, mFontsLabel, width, height, label) as FontType;
         dc.setColor(labelColor, bgColor);
-        dc.drawText(2, yOffsetPauzed, fontLabel, label, Graphics.TEXT_JUSTIFY_LEFT);
+        dc.drawText(
+          2,
+          yOffsetPauzed,
+          fontLabel,
+          label,
+          Graphics.TEXT_JUSTIFY_LEFT
+        );
       }
     }
     if ($.gShow_lightInfo) {
@@ -546,7 +708,11 @@ class SettledView extends WatchUi.DataField {
           var today = Gregorian.info(Time.now(), Time.FORMAT_MEDIUM);
           text = Lang.format("$1$:$2$", [today.hour, today.min.format("%02d")]);
           //fi.decimals = today.sec.format("%02d");
-          subtext = Lang.format("$1$ $2$ $3$", [today.day_of_week, today.day.format("%02d"), today.month]);
+          subtext = Lang.format("$1$ $2$ $3$", [
+            today.day_of_week,
+            today.day.format("%02d"),
+            today.month,
+          ]);
           break;
         case FldSolarIntensity:
           if (mValueA < 0) {
@@ -575,7 +741,9 @@ class SettledView extends WatchUi.DataField {
     var x = width / 2;
     if (subtext.length() > 0) {
       dc.setColor(labelColor, Graphics.COLOR_TRANSPARENT);
-      var fontSub = $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as FontType;
+      var fontSub =
+        $.getMatchingFont(dc, mFontsNumbers, width, height, subtext) as
+        FontType;
       if ($.gShow_lightInfo) {
         y = yOffsetPauzed;
       } else {
@@ -594,8 +762,10 @@ class SettledView extends WatchUi.DataField {
       text = "No phone!";
     }
 
-    var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
-    var font = $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
+    var justification =
+      Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+    var font =
+      $.getMatchingFont(dc, mFontsNumbers, width, height, text) as FontType;
     if (!mUseFontsNumbers) {
       font = $.getMatchingFont(dc, mFonts, width, height, text) as FontType;
     }
@@ -609,6 +779,10 @@ class SettledView extends WatchUi.DataField {
       dc.drawRectangle(0, 0, width, height);
       dc.setPenWidth(1);
     }
+   
+    if ($.gRadar_enabled && $.gRadar_show_battery && mRadarBatteryLevel > -1) {
+      drawBatteryLevel(dc, 1, 1, 30, 10, mRadarBatteryLevel);
+    }
 
     // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
     //   dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
@@ -617,12 +791,18 @@ class SettledView extends WatchUi.DataField {
     // }
   }
 
-  function drawLightInfo(dc as Dc, width as Number, height as Number, atBottom as Boolean) as Void {
+  function drawLightInfo(
+    dc as Dc,
+    width as Number,
+    height as Number,
+    atBottom as Boolean
+  ) as Void {
     var font = Graphics.FONT_MEDIUM;
     var lh = dc.getFontHeight(font);
     var x = width / 2;
     var y = height / 2;
-    var justification = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
+    var justification =
+      Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
 
     var text = "";
 
@@ -630,7 +810,7 @@ class SettledView extends WatchUi.DataField {
     if (status == AntPlus.LIGHT_NETWORK_STATE_FORMING) {
       text = "Network forming";
     } else if (status != AntPlus.LIGHT_NETWORK_STATE_FORMED) {
-      text = "No network";
+      text = "No light network";
     } else if (status == AntPlus.LIGHT_NETWORK_STATE_FORMED) {
       mBikeLights = mLightNetwork.getBikeLights();
 
@@ -663,8 +843,12 @@ class SettledView extends WatchUi.DataField {
               }
               text = textHead + textTail + textOther;
             } else {
-              var line = $.getBikeLightTypeText(light.type as Number) + " " + $.getLightModeText(light.mode as Number);
-              font = $.getMatchingFont(dc, mFonts, width, height, line) as FontType;
+              var line =
+                $.getBikeLightTypeText(light.type as Number) +
+                " " +
+                $.getLightModeText(light.mode as Number);
+              font =
+                $.getMatchingFont(dc, mFonts, width, height, line) as FontType;
               dc.drawText(x, y, font, line, justification);
               y = y + lh + 1;
             }
@@ -732,7 +916,11 @@ class SettledView extends WatchUi.DataField {
             break;
         }
 
-        text = "Mode: " + (light.mode as Number).format("%d") + " ->  " + lightMode.format("%d");
+        text =
+          "Mode: " +
+          (light.mode as Number).format("%d") +
+          " ->  " +
+          lightMode.format("%d");
         dc.drawText(x, y, font, text, justification);
 
         text = "gTail:";
@@ -784,7 +972,11 @@ class SettledView extends WatchUi.DataField {
         if (lightMode > -1 && lightMode != (light.mode as Number)) {
           var capableModes = light.getCapableModes();
           if (capableModes != null) {
-            if ((capableModes as Lang.Array<AntPlus.LightMode>).indexOf(lightMode as AntPlus.LightMode) > -1) {
+            if (
+              (capableModes as Lang.Array<AntPlus.LightMode>).indexOf(
+                lightMode as AntPlus.LightMode
+              ) > -1
+            ) {
               light.setMode(lightMode as AntPlus.LightMode);
             }
           }
@@ -801,19 +993,33 @@ class SettledView extends WatchUi.DataField {
     $.storeCapableLightModes(mBikeLights);
   }
 
-  function onUpdateLight(light as AntPlus.BikeLight, mode as AntPlus.LightMode) as Void {
+  function onUpdateLight(
+    light as AntPlus.BikeLight,
+    mode as AntPlus.LightMode
+  ) as Void {
     if (light == null) {
       mEvent = "";
       return;
     }
-    mEvent = "light: " + $.getBikeLightTypeText(light.type) + "\n mode: " + (mode as Number).format("%d");
+    mEvent =
+      "light: " +
+      $.getBikeLightTypeText(light.type) +
+      "\n mode: " +
+      (mode as Number).format("%d");
+  }
+
+  function onUpdateRadarBattery(data as AntPlus.BatteryStatus) as Void {
+    mRadarBatteryLevel = getBatteryLevel(data.batteryStatus);
   }
 
   function onUpdateRadar(data as Lang.Array<AntPlus.RadarTarget>) as Void {
     mRadarTargetAmountRight = 0;
     mRadarTargetAmountLeft = 0;
 
-    if (!$.gRadar_enabled || ($.gRadar_activity_on_only && mTimerState != Activity.TIMER_STATE_ON)) {
+    if (
+      !$.gRadar_enabled ||
+      ($.gRadar_activity_on_only && mTimerState != Activity.TIMER_STATE_ON)
+    ) {
       mRadarTargetCount = 0;
       return;
     }
@@ -884,9 +1090,75 @@ class SettledView extends WatchUi.DataField {
         return "--";
     }
   }
+
+  hidden function drawBatteryLevel(
+    dc as Dc,
+    x as Number,
+    y as Number,
+    width as Number,
+    height as Number,
+    batteryLevel as Number
+  ) as Void {
+    if (batteryLevel < 0) {
+      return;
+    }
+
+    var topMargin = 2;
+    var barWidth = 4;
+    var barHeight = height - 2; // Inner height
+    var barSpacing = 1;
+    var startX = x + 2;
+
+    // Filled color
+    if (batteryLevel >= 3) {
+      dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
+    } else if (batteryLevel == 2) {
+      dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_BLACK);
+    } else {
+      dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
+    }
+
+    dc.setPenWidth(1);
+    for (var i = 1; i <= 5; ++i) {
+      var barX = startX + (i - 1) * (barWidth + barSpacing);
+      if (i <= batteryLevel) {
+        // dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK); 
+        dc.fillRectangle(barX, y + topMargin, barWidth, barHeight);
+      } else {
+        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT); // Empty outline
+        dc.drawRectangle(barX, y + topMargin, barWidth, barHeight);
+      }
+    }
+    
+  }
+
+  hidden function getBatteryLevel(
+    batteryStatus as AntPlus.BatteryStatusValue?
+  ) as Number {
+    if (batteryStatus == null) {
+      return -1;
+    }
+
+    if (batteryStatus == AntPlus.BATT_STATUS_NEW) {
+      return 5;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_GOOD) {
+      return 4;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_OK) {
+      return 3;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_LOW) {
+      return 2;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_CRITICAL) {
+      return 1;
+    } else if (batteryStatus == AntPlus.BATT_STATUS_INVALID) {
+      return 0;
+    }
+    return -1;
+  }
 }
 
-function storeCapableLightModes(bikeLights as Lang.Array<AntPlus.LightNetworkState>?) as Void {
+function storeCapableLightModes(
+  bikeLights as Lang.Array<AntPlus.LightNetworkState>?
+) as Void {
   if (bikeLights == null || bikeLights.size() == 0) {
     return;
   }
@@ -898,7 +1170,10 @@ function storeCapableLightModes(bikeLights as Lang.Array<AntPlus.LightNetworkSta
       if (light != null) {
         var key = "lightmodes_" + $.getBikeLightTypeText(light.type as Number);
         // @@ bug in CIQ 7.2.0 passing Array<Number>
-        Storage.setValue(key, light.getCapableModes() as Array<Application.PropertyValueType>);
+        Storage.setValue(
+          key,
+          light.getCapableModes() as Array<Application.PropertyValueType>
+        );
       }
     }
   } catch (ex) {
@@ -907,7 +1182,9 @@ function storeCapableLightModes(bikeLights as Lang.Array<AntPlus.LightNetworkSta
   }
 }
 
-function getCapableLightModes(lightType as Number) as Lang.Array<AntPlus.LightMode>? {
+function getCapableLightModes(
+  lightType as Number
+) as Lang.Array<AntPlus.LightMode>? {
   var key = "lightmodes_" + $.getBikeLightTypeText(lightType as Number);
   return getStorageValue(key, null) as Lang.Array<AntPlus.LightMode>?;
 }

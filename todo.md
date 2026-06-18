@@ -1,9 +1,38 @@
+update bikelight info per second
+toast -> when gear changes show Front/Back or Front or Back
+trigger for change in Front and/or Back
+https://forums.garmin.com/developer/connect-iq/f/app-ideas/399958/shimano-di2-overlay-data-field
+
+
+daylight offset
+ - also for backlight turn on
+ $.gDay_nite_switch_seconds
+ backlight_nite_switch_seconds
+
+show battery bigger on edge *50  
+show battery radar horiz/vertical?
+on which batterylevel to show
+
+
+fallback field  / when paused -> di gear == 0 -> show other data etc.
+
+
+use metrics and fieldtype -> for field to show + fallback
+optional show white / red/ circle for light status
+--
 optional - when rader detect a car -> set light mode to fast flash
 count brakes #x y/n
 display speed option -> enabled when demo active
 display brake count
 set default to 4%
 
+x bug isnighttime -> get sunset/sunrise dynamic locations utils update 
+x convert light modes to use array in storage
+x + conversion old and remove obsolete fields
+x    DeviceSettings.isNightModeEnabled --> use in constructor to detect.
+x    test diff with getbackgroundcolor
+x test menu edge 530 - long press  
+x to test numeric input    x - update to other project numericinputview / delegate
 break light
 x% less than previous y seconds
 -> fast flash
