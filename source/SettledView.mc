@@ -51,8 +51,8 @@ class SettledView extends WatchUi.DataField {
   hidden var mLightNetworkListener as BikeLightNetworkListener;
   hidden var mLightNetwork as AntPlus.LightNetwork;
 
-  hidden var mBikeRadarListener as ABikeRadarListener?;
-  hidden var mBikeRadar as BikeRadar;
+  hidden var mBikeRadarListener as BikeRadarSensorListener?;
+  hidden var mBikeRadar as BikeRadar?;
   hidden var mRadarTargetCount as Number = 0;
   hidden var mRadarTargetDetected as Boolean = false;
   const RADARTARGETS = 8;
@@ -87,7 +87,10 @@ class SettledView extends WatchUi.DataField {
   hidden var mHasTaillight as Boolean = false;
   // hidden var mBrakelightCounter as Number = 0;
 
-  hidden var mRadarBatteryLevel as Number = -1;
+  private var mBikePower as AntPlus.BikePower?;
+  private var mPowerListener as PowerSensorListener?;
+  private var mBikeShifting as AntPlus.Shifting?;
+  private var mShiftingListener as ShiftingSensorListener?;
 
   function initialize() {
     DataField.initialize();
@@ -100,10 +103,26 @@ class SettledView extends WatchUi.DataField {
     mRadarTargetAmountLeft = 0;
     mRadarTargetAmountRight = 0;
     if ($.gRadar_enabled) {
-      mBikeRadarListener = new ABikeRadarListener(self);
+      mBikeRadarListener = new BikeRadarSensorListener(self);
       mBikeRadar = new AntPlus.BikeRadar(mBikeRadarListener);
     } else {
-      mBikeRadar = new AntPlus.BikeRadar(null);
+      mBikeRadarListener = null;
+      mBikeRadar = null;
+    }
+    if ($.gPower_enabled) {
+      mPowerListener = new PowerSensorListener();
+      mBikePower = new AntPlus.BikePower(mPowerListener);
+    } else {
+      mBikePower = null;
+      mPowerListener = null;
+    }
+
+    if ($.gShifting_enabled) {
+      mShiftingListener = new ShiftingSensorListener();
+      mBikeShifting = new AntPlus.Shifting(mShiftingListener);
+    } else {
+      mBikeShifting = null;
+      mShiftingListener = null;
     }
 
     mAlertNoPhoneCounter = $.gAlert_no_phone_Sec;
@@ -779,9 +798,43 @@ class SettledView extends WatchUi.DataField {
       dc.drawRectangle(0, 0, width, height);
       dc.setPenWidth(1);
     }
-   
-    if ($.gRadar_enabled && $.gRadar_show_battery && mRadarBatteryLevel > -1) {
-      drawBatteryLevel(dc, 1, 1, 30, 10, mRadarBatteryLevel);
+
+    var battY = 1;
+    var bars = 0;
+    if (
+      $.gRadar_enabled &&
+      $.gRadar_show_battery &&
+      mBikeRadarListener != null
+    ) {
+      bars = getNumberOfBatteryBars(mBikeRadarListener.batteryStatus);
+      if (bars > -1) {
+        drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "R:");
+        battY += 12;
+      }
+    }
+
+    if (
+      $.gPower_enabled &&
+      // $.gRadar_show_battery &&
+      mPowerListener != null
+    ) {
+      bars = getNumberOfBatteryBars(mPowerListener.batteryStatus);
+      if (bars > -1) {
+        drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "P:");
+        battY += 12;
+      }
+    }
+
+    if (
+      $.gShifting_enabled &&
+      // $.gRadar_show_battery &&
+      mShiftingListener != null
+    ) {
+      bars = getNumberOfBatteryBars(mShiftingListener.batteryStatus);
+      if (bars > -1) {
+        drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "S:");
+        battY += 12;
+      }
     }
 
     // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
@@ -1008,10 +1061,6 @@ class SettledView extends WatchUi.DataField {
       (mode as Number).format("%d");
   }
 
-  function onUpdateRadarBattery(data as AntPlus.BatteryStatus) as Void {
-    mRadarBatteryLevel = getBatteryLevel(data.batteryStatus);
-  }
-
   function onUpdateRadar(data as Lang.Array<AntPlus.RadarTarget>) as Void {
     mRadarTargetAmountRight = 0;
     mRadarTargetAmountLeft = 0;
@@ -1091,54 +1140,9 @@ class SettledView extends WatchUi.DataField {
     }
   }
 
-  hidden function drawBatteryLevel(
-    dc as Dc,
-    x as Number,
-    y as Number,
-    width as Number,
-    height as Number,
-    batteryLevel as Number
-  ) as Void {
-    if (batteryLevel < 0) {
-      return;
-    }
-
-    var topMargin = 2;
-    var barWidth = 4;
-    var barHeight = height - 2; // Inner height
-    var barSpacing = 1;
-    var startX = x + 2;
-
-    // Filled color
-    if (batteryLevel >= 3) {
-      dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_BLACK);
-    } else if (batteryLevel == 2) {
-      dc.setColor(Graphics.COLOR_YELLOW, Graphics.COLOR_BLACK);
-    } else {
-      dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_BLACK);
-    }
-
-    dc.setPenWidth(1);
-    for (var i = 1; i <= 5; ++i) {
-      var barX = startX + (i - 1) * (barWidth + barSpacing);
-      if (i <= batteryLevel) {
-        // dc.setColor(Graphics.COLOR_GREEN, Graphics.COLOR_BLACK); 
-        dc.fillRectangle(barX, y + topMargin, barWidth, barHeight);
-      } else {
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT); // Empty outline
-        dc.drawRectangle(barX, y + topMargin, barWidth, barHeight);
-      }
-    }
+  hidden function getNumberOfBatteryBars(
+    batteryStatus as Number) as Number {
     
-  }
-
-  hidden function getBatteryLevel(
-    batteryStatus as AntPlus.BatteryStatusValue?
-  ) as Number {
-    if (batteryStatus == null) {
-      return -1;
-    }
-
     if (batteryStatus == AntPlus.BATT_STATUS_NEW) {
       return 5;
     } else if (batteryStatus == AntPlus.BATT_STATUS_GOOD) {
@@ -1153,6 +1157,85 @@ class SettledView extends WatchUi.DataField {
       return 0;
     }
     return -1;
+  }
+
+  hidden function drawBatteryWithLabel(
+    dc as Graphics.Dc,
+    x as Lang.Number,
+    y as Lang.Number,
+    width as Lang.Number,
+    height as Lang.Number,
+    batteryBars as Lang.Number,
+    label as Lang.String?
+  ) as Void {
+    var currentX = x;
+    var font = Graphics.FONT_TINY;
+
+    if (batteryBars < 0) {
+      return;
+    }
+
+    var batteryColor;
+    if (batteryBars >= 3) {
+      batteryColor = Graphics.COLOR_GREEN;
+    } else if (batteryBars == 2) {
+      batteryColor = Graphics.COLOR_YELLOW;
+    } else {
+      batteryColor = Graphics.COLOR_RED;
+    }
+
+    // 1. Draw optional label in front if provided
+    if (label != null && label.length() > 0) {
+      dc.setColor(batteryColor, Graphics.COLOR_TRANSPARENT);
+
+      // Vertically center text relative to battery height
+      var textY = y + height / 2 - dc.getFontHeight(font) / 2;
+      dc.drawText(currentX, textY, font, label, Graphics.TEXT_JUSTIFY_LEFT);
+
+      // Offset battery X position based on exact rendered text width plus padding
+      currentX += dc.getTextWidthInPixels(label, font) + 4;
+    }
+
+    // 2. Define battery dimensions (reserving space for terminal nub on the right)
+    var nubWidth = 2;
+    var nubHeight = 6;
+    var bodyWidth = width - nubWidth;
+    var bodyHeight = height;
+
+    // Draw battery outer shell outline
+    dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+    dc.setPenWidth(1);
+    dc.drawRectangle(currentX, y, bodyWidth, bodyHeight);
+
+    // Draw positive terminal nub on the right
+    dc.fillRectangle(
+      currentX + bodyWidth,
+      y + bodyHeight / 2 - nubHeight / 2,
+      nubWidth,
+      nubHeight
+    );
+
+    // 3. Determine fill color ONCE to avoid redundant graphics context switches
+    dc.setColor(batteryColor, Graphics.COLOR_TRANSPARENT);
+
+    // 4. Draw segmented bars inside the battery body efficiently
+    var padding = 2;
+    var innerX = currentX + padding;
+    var innerY = y + padding;
+    var innerWidth = bodyWidth - padding * 2;
+    var innerHeight = bodyHeight - padding * 2;
+
+    var totalBars = 5;
+    var spacing = 1;
+    var totalSpacing = spacing * (totalBars - 1);
+    var barWidth = (innerWidth - totalSpacing) / totalBars;
+
+    for (var i = 1; i <= totalBars; ++i) {
+      if (i <= batteryBars) {
+        var barX = innerX + (i - 1) * (barWidth + spacing);
+        dc.fillRectangle(barX, innerY, barWidth, innerHeight);
+      }
+    }
   }
 }
 

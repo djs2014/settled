@@ -1,7 +1,14 @@
+TODO crashing power/shift listeners +
+Show battery radar/power/shift/edge  R|P|S|E
+- none, always, ok, low, critical
+
+
+
 update bikelight info per second
 toast -> when gear changes show Front/Back or Front or Back
 trigger for change in Front and/or Back
 https://forums.garmin.com/developer/connect-iq/f/app-ideas/399958/shimano-di2-overlay-data-field
+
 
 
 daylight offset

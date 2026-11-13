@@ -198,6 +198,9 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_show_battery", true);
         Storage.setValue("radar_hit_mode_1", 7);
         Storage.setValue("radar_hit_mode_2", 7);
+
+        Storage.setValue("power_enabled", false);
+        Storage.setValue("shifting_enabled", false);
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -242,39 +245,7 @@ class SettledApp extends Application.AppBase {
           $.gOther_light_mode as Lang.Array<Application.PropertyValueType>
         ) as Array<Number>;
 
-      // $.gHead_light_mode =
-      //   [
-      //     $.getStorageValue("head_light_mode_0", 0) as Number,
-      //     $.getStorageValue("head_light_mode_1", 0) as Number,
-      //     $.getStorageValue("head_light_mode_2", 6) as Number,
-      //     $.getStorageValue("head_light_mode_3", 7) as Number,
-      //     $.getStorageValue("head_light_mode_4", 15) as Number,
-      //     $.getStorageValue("head_light_mode_5", 0) as Number,
-      //     $.getStorageValue("head_light_mode_6", 0) as Number,
-      //     $.getStorageValue("head_light_mode_7", 2) as Number,
-      //   ] as Array<Number>;
-      // $.gTail_light_mode =
-      //   [
-      //     $.getStorageValue("tail_light_mode_0", 0) as Number,
-      //     $.getStorageValue("tail_light_mode_1", 0) as Number,
-      //     $.getStorageValue("tail_light_mode_2", 6) as Number,
-      //     $.getStorageValue("tail_light_mode_3", 0) as Number,
-      //     $.getStorageValue("tail_light_mode_4", 15) as Number,
-      //     $.getStorageValue("tail_light_mode_5", 0) as Number,
-      //     $.getStorageValue("tail_light_mode_6", 0) as Number,
-      //     $.getStorageValue("tail_light_mode_7", -1) as Number,
-      //   ] as Array<Number>;
-      // $.gOther_light_mode =
-      //   [
-      //     $.getStorageValue("other_light_mode_0", 0) as Number,
-      //     $.getStorageValue("other_light_mode_1", 0) as Number,
-      //     $.getStorageValue("other_light_mode_2", 6) as Number,
-      //     $.getStorageValue("other_light_mode_3", 7) as Number,
-      //     $.getStorageValue("other_light_mode_4", 15) as Number,
-      //     $.getStorageValue("other_light_mode_5", 0) as Number,
-      //     $.getStorageValue("other_light_mode_6", 0) as Number,
-      //     $.getStorageValue("other_light_mode_7", -1) as Number,
-      //   ] as Array<Number>;
+     
 
       // TODO fill the arrays
       // TODO check on correct size -> fill with -1
@@ -439,6 +410,11 @@ class SettledApp extends Application.AppBase {
           ) as Boolean;
       }
 
+      $.gShifting_enabled =
+        $.getStorageValue("shifting_enabled", $.gShifting_enabled) as Boolean;
+      $.gPower_enabled =
+        $.getStorageValue("power_enabled", $.gPower_enabled) as Boolean;
+
       System.println("User settings loaded");
     } catch (ex) {
       System.println(ex.getErrorMessage());
@@ -518,6 +494,9 @@ var gRadar_hit_mode_1 as Number = 7; // Fast flash
 var gRadar_hit_mode_2 as Number = 7; // Fast flash
 var gRadar_show_threat_side as Boolean = true;
 var gRadar_show_battery as Boolean = true;
+
+var gPower_enabled as Boolean = false;
+var gShifting_enabled as Boolean = false;
 
 public enum FieldDisplay {
   FldLights = 0,

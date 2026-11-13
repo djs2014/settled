@@ -7,9 +7,8 @@ import Toybox.AntPlus;
 import Toybox.Activity;
 
 class DataFieldSettingsMenu extends WatchUi.Menu2 {
-  
   function initialize() {
-    Menu2.initialize({ :title => "Settings" });  
+    Menu2.initialize({ :title => "Settings" });
   }
 }
 
@@ -616,6 +615,48 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       return;
     }
 
+    if (id instanceof String && id.equals("battery")) {
+      var batteryMenu = new WatchUi.Menu2({ :title => "Battery" });
+
+      var boolean = Storage.getValue("power_enabled") ? true : false;
+      batteryMenu.addItem(
+        new WatchUi.ToggleMenuItem(
+          "Power",
+          null,
+          "power_enabled",
+          boolean,
+          null
+        )
+      );
+      boolean = Storage.getValue("shifting_enabled") ? true : false;
+      batteryMenu.addItem(
+        new WatchUi.ToggleMenuItem(
+          "Shifting",
+          null,
+          "shifting_enabled",
+          boolean,
+          null
+        )
+      );
+
+      boolean = Storage.getValue("radar_show_battery") ? true : false;
+      batteryMenu.addItem(
+        new WatchUi.ToggleMenuItem(
+          "Radar",
+          null,
+          "radar_show_battery",
+          boolean,
+          null
+        )
+      );
+
+      WatchUi.pushView(
+        batteryMenu,
+        new $.GeneralMenuDelegate(self, batteryMenu),
+        WatchUi.SLIDE_UP
+      );
+    }
+
     if (id instanceof String && id.equals("test_TimerState")) {
       var sp = new selectionMenuPicker("Test TimerState", id as String);
       for (var i = -1; i <= 3; i++) {
@@ -737,7 +778,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     Toybox.WatchUi.pushView(
       view,
-      new $.NumericInputDelegate( view),
+      new $.NumericInputDelegate(view),
       WatchUi.SLIDE_RIGHT
     );
   }
@@ -772,7 +813,7 @@ class GeneralMenuDelegate extends WatchUi.Menu2InputDelegate {
 
     Toybox.WatchUi.pushView(
       view,
-      new $.NumericInputDelegate( view),
+      new $.NumericInputDelegate(view),
       WatchUi.SLIDE_IMMEDIATE
     );
   }
