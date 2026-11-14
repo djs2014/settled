@@ -650,9 +650,9 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       );
 
     mi = new WatchUi.MenuItem(
-        "Show when lower than",
+        "Show when lower than|0~5",
         null,
-        "shifting_show_battery_treshold|0~5",
+        "shifting_show_battery_treshold",
         null
       );
       value = getStorageValue(mi.getId() as String, 0) as Number;
@@ -1048,6 +1048,9 @@ function getStorageNumberAsString(key as String) as String {
   return ($.getStorageValue(key, 0) as Number).format("%0d");
 }
 
-function getBatterylevelText(bars as Number) as String {
-  return bars.format("0d") + " bars";
+function getBatterylevelText(bars as Number?) as String {
+  if (bars == null) {
+    return "--";
+  }
+  return bars.format("%0d") + " bars";
 }
