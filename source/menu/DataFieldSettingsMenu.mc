@@ -639,16 +639,17 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         )
       );
 
-      boolean = Storage.getValue("radar_show_battery") ? true : false;
-      batteryMenu.addItem(
-        new WatchUi.ToggleMenuItem(
-          "Radar",
-          null,
-          "radar_show_battery",
-          boolean,
-          null
-        )
-      );
+      // TODO sep from radar detect
+      // boolean = Storage.getValue("radar_show_battery") ? true : false;
+      // batteryMenu.addItem(
+      //   new WatchUi.ToggleMenuItem(
+      //     "Radar",
+      //     null,
+      //     "radar_show_battery",
+      //     boolean,
+      //     null
+      //   )
+      // );
 
       WatchUi.pushView(
         batteryMenu,

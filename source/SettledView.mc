@@ -801,6 +801,7 @@ class SettledView extends WatchUi.DataField {
 
     var battY = 1;
     var bars = 0;
+    var battLineH = 14;
     if (
       $.gRadar_enabled &&
       $.gRadar_show_battery &&
@@ -809,7 +810,7 @@ class SettledView extends WatchUi.DataField {
       bars = getNumberOfBatteryBars(mBikeRadarListener.batteryStatus);
       if (bars > -1) {
         drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "R:");
-        battY += 12;
+        battY += battLineH;
       }
     }
 
@@ -821,7 +822,7 @@ class SettledView extends WatchUi.DataField {
       bars = getNumberOfBatteryBars(mPowerListener.batteryStatus);
       if (bars > -1) {
         drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "P:");
-        battY += 12;
+        battY += battLineH;
       }
     }
 
@@ -833,7 +834,7 @@ class SettledView extends WatchUi.DataField {
       bars = getNumberOfBatteryBars(mShiftingListener.batteryStatus);
       if (bars > -1) {
         drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "S:");
-        battY += 12;
+        battY += battLineH;
       }
     }
 
@@ -1168,12 +1169,12 @@ class SettledView extends WatchUi.DataField {
     batteryBars as Lang.Number,
     label as Lang.String?
   ) as Void {
-    var currentX = x;
-    var font = Graphics.FONT_TINY;
-
     if (batteryBars < 0) {
       return;
     }
+
+    var currentX = x;
+    var font = Graphics.FONT_XTINY;
 
     var batteryColor;
     if (batteryBars >= 3) {
