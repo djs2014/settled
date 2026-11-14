@@ -677,6 +677,7 @@ class SettledView extends WatchUi.DataField {
       }
     }
 
+    var labelYOffset = 0;
     if ($.gShow_label && mActivityPauzed) {
       var label = $.getDisplayText($.gDisplay_field);
       if (label.length() > 0) {
@@ -690,6 +691,8 @@ class SettledView extends WatchUi.DataField {
           label,
           Graphics.TEXT_JUSTIFY_LEFT
         );
+
+        labelYOffset = dc.getFontHeight(fontLabel) + yOffsetPauzed;
       }
     }
     if ($.gShow_lightInfo) {
@@ -799,18 +802,23 @@ class SettledView extends WatchUi.DataField {
       dc.setPenWidth(1);
     }
 
-    var battY = 1;
+    var battY = 2;
+    if ($.gShow_label && mActivityPauzed) {
+      battY = labelYOffset + 2;
+    }
     var bars = 0;
-    var battLineH = 14;
+    var battX = 2;
+    var battW = (dc.getWidth() / 3).toNumber();    
+    battY = 2;
     if (
       $.gRadar_enabled &&
       $.gRadar_show_battery &&
       mBikeRadarListener != null
     ) {
       bars = getNumberOfBatteryBars(mBikeRadarListener.batteryStatus);
-      if (bars > -1) {
-        drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "R:");
-        battY += battLineH;
+      if (bars > 0) {
+        drawBatteryWithLabel(dc, battX, battY, 30, 10, bars, "Rad:");
+        battX += battW;
       }
     }
 
@@ -820,9 +828,9 @@ class SettledView extends WatchUi.DataField {
       mPowerListener != null
     ) {
       bars = getNumberOfBatteryBars(mPowerListener.batteryStatus);
-      if (bars > -1) {
-        drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "P:");
-        battY += battLineH;
+      if (bars > 0) {
+        drawBatteryWithLabel(dc, battX, battY, 30, 10, bars, "Pwr:");
+        battX += battW;
       }
     }
 
@@ -832,11 +840,20 @@ class SettledView extends WatchUi.DataField {
       mShiftingListener != null
     ) {
       bars = getNumberOfBatteryBars(mShiftingListener.batteryStatus);
-      if (bars > -1) {
-        drawBatteryWithLabel(dc, 1, battY, 30, 10, bars, "S:");
-        battY += battLineH;
+      if (bars > 0) {
+        drawBatteryWithLabel(dc, battX, battY, 30, 10, bars, "Sft:");
+        battX += battW;
       }
     }
+
+    // TEST
+    
+    // battX = 1;
+    // drawBatteryWithLabel(dc, battX, battY, 30, 12, 2, "R:");
+    // battX += battW;
+    // drawBatteryWithLabel(dc, battX, battY, 30, 12, 3, "P:");
+    // battX += battW;
+    // drawBatteryWithLabel(dc, battX, battY, 30, 12, 4, "S:");
 
     // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
     //   dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
@@ -1141,9 +1158,7 @@ class SettledView extends WatchUi.DataField {
     }
   }
 
-  hidden function getNumberOfBatteryBars(
-    batteryStatus as Number) as Number {
-    
+  hidden function getNumberOfBatteryBars(batteryStatus as Number) as Number {
     if (batteryStatus == AntPlus.BATT_STATUS_NEW) {
       return 5;
     } else if (batteryStatus == AntPlus.BATT_STATUS_GOOD) {
@@ -1168,10 +1183,12 @@ class SettledView extends WatchUi.DataField {
     height as Lang.Number,
     batteryBars as Lang.Number,
     label as Lang.String?
-  ) as Void {
+  ) as Number {
     if (batteryBars < 0) {
-      return;
+      return 0;
     }
+
+    System.println([x, y, width, height, batteryBars, label]);
 
     var currentX = x;
     var font = Graphics.FONT_XTINY;
@@ -1237,6 +1254,8 @@ class SettledView extends WatchUi.DataField {
         dc.fillRectangle(barX, innerY, barWidth, innerHeight);
       }
     }
+
+    return currentX + bodyWidth + nubWidth;
   }
 }
 
