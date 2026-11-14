@@ -201,6 +201,9 @@ class SettledApp extends Application.AppBase {
 
         Storage.setValue("power_enabled", false);
         Storage.setValue("shifting_enabled", false);
+        Storage.setValue("radar_show_battery_treshold", 2);
+        Storage.setValue("power_show_battery_treshold", 2);
+        Storage.setValue("shifting_show_battery_treshold", 2);
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -414,6 +417,12 @@ class SettledApp extends Application.AppBase {
         $.getStorageValue("shifting_enabled", $.gShifting_enabled) as Boolean;
       $.gPower_enabled =
         $.getStorageValue("power_enabled", $.gPower_enabled) as Boolean;
+      $.gRadarBatteryTreshold = 
+        $.getStorageValue("radar_show_battery_treshold", $.gRadarBatteryTreshold) as Number;
+      $.gPowerBatteryTreshold = 
+        $.getStorageValue("power_show_battery_treshold", $.gPowerBatteryTreshold) as Number;
+      $.gShiftingBatteryTreshold = 
+        $.getStorageValue("shifting_show_battery_treshold", $.gShiftingBatteryTreshold) as Number;
 
       System.println("User settings loaded");
     } catch (ex) {
@@ -497,6 +506,9 @@ var gRadar_show_battery as Boolean = true;
 
 var gPower_enabled as Boolean = false;
 var gShifting_enabled as Boolean = false;
+var gRadarBatteryTreshold as Number = 2;
+var gPowerBatteryTreshold as Number = 2;
+var gShiftingBatteryTreshold as Number = 2;
 
 public enum FieldDisplay {
   FldLights = 0,

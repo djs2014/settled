@@ -476,16 +476,15 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         )
       );
 
-      // TODO, later select when to show battery ..
-      // mi = new WatchUi.MenuItem(
-      //   "Show when lower than",
-      //   null,
-      //   "radar_show_battery_treshold",
-      //   null
-      // );
-      // value = getStorageValue(mi.getId() as String, 0) as Number;
-      // mi.setSubLabel($.getBatterylevelText(value));
-      // radarMenu.addItem(mi);
+      mi = new WatchUi.MenuItem(
+        "Show when lower than|0~5",
+        null,
+        "radar_show_battery_treshold",
+        null
+      );
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getBatterylevelText(value));
+      radarMenu.addItem(mi);
 
       WatchUi.pushView(
         radarMenu,
@@ -628,6 +627,17 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
           null
         )
       );
+
+      var mi = new WatchUi.MenuItem(
+        "Show when lower than|0~5",
+        null,
+        "power_show_battery_treshold",
+        null
+      );
+      var value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getBatterylevelText(value));
+      batteryMenu.addItem(mi);
+
       boolean = Storage.getValue("shifting_enabled") ? true : false;
       batteryMenu.addItem(
         new WatchUi.ToggleMenuItem(
@@ -638,6 +648,16 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
           null
         )
       );
+
+    mi = new WatchUi.MenuItem(
+        "Show when lower than",
+        null,
+        "shifting_show_battery_treshold|0~5",
+        null
+      );
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getBatterylevelText(value));
+      batteryMenu.addItem(mi);
 
       // TODO sep from radar detect
       // boolean = Storage.getValue("radar_show_battery") ? true : false;
@@ -1026,4 +1046,8 @@ function getTimerStateAsString(key as Number) as String {
 
 function getStorageNumberAsString(key as String) as String {
   return ($.getStorageValue(key, 0) as Number).format("%0d");
+}
+
+function getBatterylevelText(bars as Number) as String {
+  return bars.format("0d") + " bars";
 }

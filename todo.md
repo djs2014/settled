@@ -1,6 +1,5 @@
 TODO crashing power/shift listeners +
 Show battery radar/power/shift/edge  R|P|S|E
-- none, always, ok, low, critical
 
 
 

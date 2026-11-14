@@ -802,23 +802,28 @@ class SettledView extends WatchUi.DataField {
       dc.setPenWidth(1);
     }
 
+    var battX = 2;
     var battY = 2;
     if ($.gShow_label && mActivityPauzed) {
       battY = labelYOffset + 2;
     }
+    var battCellW = (dc.getWidth() / 3).toNumber();
     var bars = 0;
-    var battX = 2;
-    var battW = (dc.getWidth() / 3).toNumber();    
-    battY = 2;
+    var battW = 30;
+    var battH = 12;
+    if ($.gHasHighResScreen) {
+      battW = 40;
+      battH = 18;
+    }
     if (
       $.gRadar_enabled &&
       $.gRadar_show_battery &&
       mBikeRadarListener != null
     ) {
       bars = getNumberOfBatteryBars(mBikeRadarListener.batteryStatus);
-      if (bars > 0) {
-        drawBatteryWithLabel(dc, battX, battY, 30, 10, bars, "Rad:");
-        battX += battW;
+      if (bars > 0 && bars <= $.gRadarBatteryTreshold) {
+        drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "R:");
+        battX += battCellW;
       }
     }
 
@@ -828,9 +833,9 @@ class SettledView extends WatchUi.DataField {
       mPowerListener != null
     ) {
       bars = getNumberOfBatteryBars(mPowerListener.batteryStatus);
-      if (bars > 0) {
-        drawBatteryWithLabel(dc, battX, battY, 30, 10, bars, "Pwr:");
-        battX += battW;
+      if (bars > 0 && bars <= $.gPowerBatteryTreshold) {
+        drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "P:");
+        battX += battCellW;
       }
     }
 
@@ -840,20 +845,18 @@ class SettledView extends WatchUi.DataField {
       mShiftingListener != null
     ) {
       bars = getNumberOfBatteryBars(mShiftingListener.batteryStatus);
-      if (bars > 0) {
-        drawBatteryWithLabel(dc, battX, battY, 30, 10, bars, "Sft:");
-        battX += battW;
+      if (bars > 0 && bars <= $.gShiftingBatteryTreshold) {
+        drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "S:");
+        battX += battCellW;
       }
     }
 
     // TEST
-    
-    // battX = 1;
-    // drawBatteryWithLabel(dc, battX, battY, 30, 12, 2, "R:");
-    // battX += battW;
-    // drawBatteryWithLabel(dc, battX, battY, 30, 12, 3, "P:");
-    // battX += battW;
-    // drawBatteryWithLabel(dc, battX, battY, 30, 12, 4, "S:");
+    // drawBatteryWithLabel(dc, battX, battY, battW, battH, 2, "R:");
+    // battX += battCellW;
+    // drawBatteryWithLabel(dc, battX, battY, battW, battH, 3, "P:");
+    // battX += battCellW;
+    // drawBatteryWithLabel(dc, battX, battY, battW, battH, 4, "S:");
 
     // if ($.gBrakelight_showCounter && mBrakelightCounter > 0) {
     //   dc.setColor(fgColor, Graphics.COLOR_TRANSPARENT);
