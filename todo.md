@@ -1,6 +1,5 @@
-TODO crashing power/shift listeners +
-Show battery radar/power/shift/edge  R|P|S|E
-
+show batter when paused
+light listener -> battery status
 
 
 update bikelight info per second

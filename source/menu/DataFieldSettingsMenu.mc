@@ -477,7 +477,7 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       );
 
       mi = new WatchUi.MenuItem(
-        "Show when lower than|0~5",
+        "Show when having|0~5 (bars)",
         null,
         "radar_show_battery_treshold",
         null
@@ -617,7 +617,28 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
     if (id instanceof String && id.equals("battery")) {
       var batteryMenu = new WatchUi.Menu2({ :title => "Battery" });
 
-      var boolean = Storage.getValue("power_enabled") ? true : false;
+      var boolean = getStorageValue("light_enabled", $.gLight_enabled) as Boolean;      
+      batteryMenu.addItem(
+        new WatchUi.ToggleMenuItem(
+          "Light",
+          null,
+          "light_enabled",
+          boolean,
+          null
+        )
+      );
+
+      var mi = new WatchUi.MenuItem(
+        "Show when having|0~5 (bars)",
+        null,
+        "light_show_battery_treshold",
+        null
+      );
+      var value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getBatterylevelText(value));
+      batteryMenu.addItem(mi);
+
+      boolean = getStorageValue("power_enabled", $.gPower_enabled) as Boolean;      
       batteryMenu.addItem(
         new WatchUi.ToggleMenuItem(
           "Power",
@@ -628,17 +649,17 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         )
       );
 
-      var mi = new WatchUi.MenuItem(
-        "Show when lower than|0~5",
+      mi = new WatchUi.MenuItem(
+        "Show when having|0~5 (bars)",
         null,
         "power_show_battery_treshold",
         null
       );
-      var value = getStorageValue(mi.getId() as String, 0) as Number;
+      value = getStorageValue(mi.getId() as String, 0) as Number;
       mi.setSubLabel($.getBatterylevelText(value));
       batteryMenu.addItem(mi);
 
-      boolean = Storage.getValue("shifting_enabled") ? true : false;
+      boolean = getStorageValue("shifting_enabled", $.gShifting_enabled) as Boolean;
       batteryMenu.addItem(
         new WatchUi.ToggleMenuItem(
           "Shifting",
@@ -649,8 +670,8 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         )
       );
 
-    mi = new WatchUi.MenuItem(
-        "Show when lower than|0~5",
+      mi = new WatchUi.MenuItem(
+        "Show when having|0~5 (bars)",
         null,
         "shifting_show_battery_treshold",
         null
@@ -670,6 +691,16 @@ class DataFieldSettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
       //     null
       //   )
       // );
+
+      mi = new WatchUi.MenuItem(
+        "Beep when having|0~5 (bars)",
+        null,
+        "alert_beep_battery_treshold",
+        null
+      );
+      value = getStorageValue(mi.getId() as String, 0) as Number;
+      mi.setSubLabel($.getBatterylevelText(value));
+      batteryMenu.addItem(mi);
 
       WatchUi.pushView(
         batteryMenu,

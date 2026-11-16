@@ -92,6 +92,11 @@ class SettledView extends WatchUi.DataField {
   private var mBikeShifting as AntPlus.Shifting?;
   private var mShiftingListener as ShiftingSensorListener?;
 
+  private var mHasAlertLightBattery as Boolean = false;
+  private var mHasAlertRadarBattery as Boolean = false;
+  private var mHasAlertPowerBattery as Boolean = false;
+  private var mHasAlertShiftingBattery as Boolean = false;
+
   function initialize() {
     DataField.initialize();
 
@@ -501,6 +506,13 @@ class SettledView extends WatchUi.DataField {
     turnBacklightOn();
   }
 
+  function playAlertSound() as Void {
+    if (!(Attention has :playTone) || !System.getDeviceSettings().tonesOn) {
+      return;
+    }
+    Attention.playTone(Attention.TONE_LOW_BATTERY);
+  }
+
   // TODO, if duration is <0,
   //
   // true night time, false day time
@@ -807,13 +819,27 @@ class SettledView extends WatchUi.DataField {
     if ($.gShow_label && mActivityPauzed) {
       battY = labelYOffset + 2;
     }
-    var battCellW = (dc.getWidth() / 3).toNumber();
+    var battCellW = (dc.getWidth() / 4).toNumber();
     var bars = 0;
-    var battW = 30;
+    var battW = 24;
     var battH = 12;
     if ($.gHasHighResScreen) {
-      battW = 40;
+      battW = 35;
       battH = 18;
+    }
+
+    if ($.gLight_enabled) {
+      bars = getNumberOfBatteryBars(mLightNetworkListener.batteryStatus);
+      if (bars > 0 && bars <= $.gLightBatteryTreshold) {
+        drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "R:");
+        battX += battCellW;
+        if (bars <= $.gLightBatteryTreshold && !mHasAlertLightBattery) {
+          mHasAlertLightBattery = true;
+          playAlertSound();
+        }
+      } else if (mHasAlertLightBattery && bars > $.gLightBatteryTreshold) {
+        mHasAlertLightBattery = false;
+      }
     }
     if (
       $.gRadar_enabled &&
@@ -824,6 +850,12 @@ class SettledView extends WatchUi.DataField {
       if (bars > 0 && bars <= $.gRadarBatteryTreshold) {
         drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "R:");
         battX += battCellW;
+        if (bars <= $.gRadarBatteryTreshold && !mHasAlertRadarBattery) {
+          mHasAlertRadarBattery = true;
+          playAlertSound();
+        }
+      } else if (mHasAlertRadarBattery && bars > $.gRadarBatteryTreshold) {
+        mHasAlertRadarBattery = false;
       }
     }
 
@@ -836,6 +868,12 @@ class SettledView extends WatchUi.DataField {
       if (bars > 0 && bars <= $.gPowerBatteryTreshold) {
         drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "P:");
         battX += battCellW;
+        if (bars <= $.gPowerBatteryTreshold && !mHasAlertPowerBattery) {
+          mHasAlertPowerBattery = true;
+          playAlertSound();
+        }
+      } else if (mHasAlertPowerBattery && bars > $.gPowerBatteryTreshold) {
+        mHasAlertPowerBattery = false;
       }
     }
 
@@ -848,10 +886,18 @@ class SettledView extends WatchUi.DataField {
       if (bars > 0 && bars <= $.gShiftingBatteryTreshold) {
         drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "S:");
         battX += battCellW;
+        if (bars <= $.gShiftingBatteryTreshold && !mHasAlertShiftingBattery) {
+          mHasAlertShiftingBattery = true;
+          playAlertSound();
+        }
+      } else if (mHasAlertShiftingBattery && bars > $.gShiftingBatteryTreshold) {
+        mHasAlertShiftingBattery = false;
       }
     }
 
     // TEST
+    // drawBatteryWithLabel(dc, battX, battY, battW, battH, 5, "L:");
+    // battX += battCellW;
     // drawBatteryWithLabel(dc, battX, battY, battW, battH, 2, "R:");
     // battX += battCellW;
     // drawBatteryWithLabel(dc, battX, battY, battW, battH, 3, "P:");

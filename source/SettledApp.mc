@@ -14,9 +14,9 @@ class SettledApp extends Application.AppBase {
     return [new SettledView()];
   }
 
-  function getSettingsView() as [WatchUi.Views] or
-    [WatchUi.Views, WatchUi.InputDelegates] or
-    Null {
+  function getSettingsView() as
+    [WatchUi.Views] or [WatchUi.Views, WatchUi.InputDelegates] or Null
+  {
     loadUserSettings();
     return [new $.DataFieldSettingsView(), new $.DataFieldSettingsDelegate()];
   }
@@ -199,11 +199,13 @@ class SettledApp extends Application.AppBase {
         Storage.setValue("radar_hit_mode_1", 7);
         Storage.setValue("radar_hit_mode_2", 7);
 
+        Storage.setValue("light_enabled", true);
         Storage.setValue("power_enabled", false);
         Storage.setValue("shifting_enabled", false);
         Storage.setValue("radar_show_battery_treshold", 2);
         Storage.setValue("power_show_battery_treshold", 2);
         Storage.setValue("shifting_show_battery_treshold", 2);
+        Storage.setValue("alert_beep_battery_treshold", 2);
       }
 
       $.gDebug = getStorageValue("debug", $.gDebug) as Boolean;
@@ -248,8 +250,6 @@ class SettledApp extends Application.AppBase {
           $.gOther_light_mode as Lang.Array<Application.PropertyValueType>
         ) as Array<Number>;
 
-     
-
       // TODO fill the arrays
       // TODO check on correct size -> fill with -1
       var d2nSeconds =
@@ -283,8 +283,9 @@ class SettledApp extends Application.AppBase {
               Lang.Array<Application.PropertyValueType>
           ) as Array<Number>;
       }
-      $.gSunEventDegreesDifference = $.getStorageValue("sunevent_degrees_difference", 1.0d) as Double;
-      
+      $.gSunEventDegreesDifference =
+        $.getStorageValue("sunevent_degrees_difference", 1.0d) as Double;
+
       $.gDisplay_field =
         $.getStorageValue("display_field", $.gDisplay_field) as FieldDisplay;
       $.gShow_label = $.getStorageValue("show_label", $.gShow_label) as Boolean;
@@ -300,7 +301,7 @@ class SettledApp extends Application.AppBase {
       $.gBacklight_on_meters =
         $.getStorageValue("backlight_on_alerts", $.gBacklight_on_meters) as
         Number;
-      // only at night  
+      // only at night
       $.gBacklight_at_night =
         $.getStorageValue("backlight_at_night", $.gBacklight_at_night) as
         Boolean;
@@ -407,23 +408,41 @@ class SettledApp extends Application.AppBase {
         $.gRadar_hit_mode_2 =
           $.getStorageValue("radar_hit_mode_2", $.gRadar_hit_mode_2) as Number;
         $.gRadar_show_battery =
-          $.getStorageValue(
-            "radar_show_battery",
-            $.gRadar_show_battery
-          ) as Boolean;
+          $.getStorageValue("radar_show_battery", $.gRadar_show_battery) as
+          Boolean;
       }
 
-      $.gShifting_enabled =
-        $.getStorageValue("shifting_enabled", $.gShifting_enabled) as Boolean;
+      $.gLight_enabled =
+        $.getStorageValue("light_enabled", $.gLight_enabled) as Boolean;
+      $.gLightBatteryTreshold =
+        $.getStorageValue(
+          "light_show_battery_treshold",
+          $.gLightBatteryTreshold
+        ) as Number;
+      $.gRadarBatteryTreshold =
+        $.getStorageValue(
+          "radar_show_battery_treshold",
+          $.gRadarBatteryTreshold
+        ) as Number;
       $.gPower_enabled =
         $.getStorageValue("power_enabled", $.gPower_enabled) as Boolean;
-      $.gRadarBatteryTreshold = 
-        $.getStorageValue("radar_show_battery_treshold", $.gRadarBatteryTreshold) as Number;
-      $.gPowerBatteryTreshold = 
-        $.getStorageValue("power_show_battery_treshold", $.gPowerBatteryTreshold) as Number;
-      $.gShiftingBatteryTreshold = 
-        $.getStorageValue("shifting_show_battery_treshold", $.gShiftingBatteryTreshold) as Number;
-
+      $.gShifting_enabled =
+        $.getStorageValue("shifting_enabled", $.gShifting_enabled) as Boolean;
+      $.gPowerBatteryTreshold =
+        $.getStorageValue(
+          "power_show_battery_treshold",
+          $.gPowerBatteryTreshold
+        ) as Number;
+      $.gShiftingBatteryTreshold =
+        $.getStorageValue(
+          "shifting_show_battery_treshold",
+          $.gShiftingBatteryTreshold
+        ) as Number;
+      $.gAlert_beep_battery_treshold =
+        $.getStorageValue(
+          "alert_beep_battery_treshold",
+          $.gAlert_beep_battery_treshold
+        ) as Number;
       System.println("User settings loaded");
     } catch (ex) {
       System.println(ex.getErrorMessage());
@@ -504,11 +523,14 @@ var gRadar_hit_mode_2 as Number = 7; // Fast flash
 var gRadar_show_threat_side as Boolean = true;
 var gRadar_show_battery as Boolean = true;
 
+var gLight_enabled as Boolean = false;
 var gPower_enabled as Boolean = false;
 var gShifting_enabled as Boolean = false;
 var gRadarBatteryTreshold as Number = 2;
+var gLightBatteryTreshold as Number = 2;
 var gPowerBatteryTreshold as Number = 2;
 var gShiftingBatteryTreshold as Number = 2;
+var gAlert_beep_battery_treshold as Number = 2;
 
 public enum FieldDisplay {
   FldLights = 0,
