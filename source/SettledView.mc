@@ -831,7 +831,7 @@ class SettledView extends WatchUi.DataField {
     if ($.gLight_enabled) {
       bars = getNumberOfBatteryBars(mLightNetworkListener.batteryStatus);
       if (bars > 0 && bars <= $.gLightBatteryTreshold) {
-        drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "R:");
+        drawBatteryWithLabel(dc, battX, battY, battW, battH, bars, "L:");
         battX += battCellW;
         if (bars <= $.gLightBatteryTreshold && !mHasAlertLightBattery) {
           mHasAlertLightBattery = true;
